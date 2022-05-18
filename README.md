@@ -8,6 +8,12 @@ using an esp32 board fitted with an ssd1306 display.
 <br>
 *(Inspired by https://forum.fhem.de/index.php/topic,110599.0.html)*
 
+<img alt="Creative Commons License" style="border-width:0"
+     src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" />
+This work is licensed under a
+<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">
+  Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.
+
 ## How To Use
 
 Put the files from the BSB-LAN sub-directory into your BSB-LAN sketch directory
