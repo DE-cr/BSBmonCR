@@ -8,10 +8,11 @@
 
 //-- config:
 
-#define HELLO "-- Welcome to BSBmonCR v0.3! --"
+#define HELLO "-- Welcome to BSBmonCR v0.3.1! --"
 
 #define MY_SSID "MyWLAN"
 #define MY_PASSWORD "MyPassword"
+#define WIFI_CHECK_INTERVAL 7000  // [ms]
 
 // names of computers to periodically check their network presence:
 #define ADDR_TO_CHECK  // e.g.: "Smartphone1", "Smartphone2", "Notebook"
@@ -35,6 +36,8 @@
 #include <ESP32Ping.h>
 
 //-- vars:
+
+unsigned long last_wifi_check_ms = 0;
 
 OLED_TYPE oled( OLED_ROTATION, U8X8_PIN_NONE );
 WiFiUDP udp;
@@ -161,6 +164,17 @@ void setup( ) {
 
 void loop( ) {
   unsigned long ms = millis( );
+  //- wifi check?:
+  if ( ms - last_wifi_check_ms > WIFI_CHECK_INTERVAL
+       || ms < last_wifi_check_ms  // overflow?
+     ) {
+    if ( WiFi.status( ) != WL_CONNECTED ) {
+      Serial.println( "Reconnecting WiFi..." );
+      WiFi.disconnect( );
+      WiFi.begin( );
+     }
+    last_wifi_check_ms = ms;  
+  }
   int screen_update_reqd = 0;
   //- which log data bin to use?:
   int pos = ms            // overflow after ca. 54 d ignored!
@@ -179,7 +193,10 @@ void loop( ) {
     screen_update_reqd = 1;
   }
   //- check presence of IP addresses given:
-  if ( ms - last_addr_check_ms > ADDR_CHECK_INTERVAL ) {
+  if ( N_ADDR_TO_CHECK &&  // feature enabled?
+       ( ms - last_addr_check_ms > ADDR_CHECK_INTERVAL  // time to check?
+         || ms < last_addr_check_ms )  // overflow?
+     ) {
     last_addr_check_ms = ms;
     if ( i_addr_to_check >= N_ADDR_TO_CHECK )
       i_addr_to_check = 0;
@@ -232,7 +249,7 @@ void loop( ) {
     draw_temp( water_temp, 42 - PLOT_REDUCTION * 2,
                water_heating ? water_on_bits : water_off_bits );
     // addr presence bars on lower left:           
-    int len = ( 128 - DATA_SIZE ) / N_ADDR_TO_CHECK;
+    #define len ( ( 128 - DATA_SIZE ) / N_ADDR_TO_CHECK )
     for ( int addr=0; addr<N_ADDR_TO_CHECK; ++addr )
       if ( ADDR_CHECK_HOLD_STATUS ? ipadr[addr][pos].sum : addr_available[ addr ] )
         oled.drawLine( addr*len, 62, (addr+1)*len-2, 62 );
