@@ -8,7 +8,7 @@
 
 //-- config:
 
-#define HELLO "-- Welcome to BSBmonCR v0.3.1! --"
+#define HELLO "-- Welcome to BSBmonCR v0.3.2! --"
 
 #define MY_SSID "MyWLAN"
 #define MY_PASSWORD "MyPassword"
@@ -219,7 +219,7 @@ void loop( ) {
         case 8001: rooms_heating = 111 <= val && val <= 116;
                    screen_update_reqd = 1;
                    break;
-        case 8003: water_heating =  92 <= val && val <=  97;
+        case 8003: water_heating =  80 <= val && val <=  97;
                    screen_update_reqd = 1;
                    break;
         case 8700: outsd_temp = 0.1 * val;
