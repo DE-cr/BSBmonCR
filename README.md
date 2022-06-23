@@ -4,7 +4,7 @@
 <img src="BSBmonCR.gif" size="400%">
 
 Monitoring some heating related parameters via [BSB-LAN](https://github.com/fredlcore/bsb-lan),
-using an esp32 board fitted with an ssd1306 display.
+using an esp32 board (optionally) fitted with an ssd1306 display.
 <br>
 *(Inspired by https://forum.fhem.de/index.php/topic,110599.0.html)*
 
