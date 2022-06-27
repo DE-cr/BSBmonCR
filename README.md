@@ -29,9 +29,7 @@ heating system's configuration. Look for the 'switch' statement in
 BSBmonCR.ino and also adapt BSB-LAN/BSB_LAN_custom_global.h accordingly.)
 
 If all goes well, you should see data from your BSB-LAN system displayed
-on the BSBmonCR unit. You should also be able to display its screen contents
-(even without an ssd1306 display attached) on any web browser in your network
-by loading http://\<your-BSBmonCR-address\>/
+on the BSBmonCR unit.
 
 ## Display Contents
 
@@ -49,9 +47,16 @@ longer when the average temperature in the first 20 minutes is the same
 as in the currently running 20 minutes. Vertically, the plots scale
 automatically to fully use the limited space available. They will look best
 once the first 24 hours have elapsed and the plots take up their whole width.
-  
-### Bonus Display
-  
+
+## Screenshots via HTTP
+
+Introduced with v0.2.0: You should also be able to display its screen contents
+(even without an ssd1306 display attached) on any web browser in your network
+by loading http://\<your-BSBmonCR-address\>/
+
+## Presence Indicator
+
+Introduced with v0.3.0 (first version on GitHub):
 You can add a presence check for computer systems (e.g. cell phones, which
 roughly translates to people ;) in your network. Note that for simplicity
 reasons this has been implemented using ping, which is not the most
@@ -62,7 +67,7 @@ row at the bottom of the screen, plus 0-2 empty lines above them.
 
 ## Code Comments / Warnings
   
-* There's minimal error handling in some cases.
-* HTTP handling is pragmatic, not polite.
 * In several/most places, screen coordinates are hard-coded for a 128*64
   display, not calculated to fit a screen with possibly differing dimensions.
+* There's minimal error handling in some cases.
+* In serving screenshots, HTTP handling is pragmatic, not polite.
