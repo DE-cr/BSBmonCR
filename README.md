@@ -111,7 +111,7 @@ instead to expand the `?` wildcards. Perl is [free](https://perl.org) software, 
 * In most places, screen coordinates are hard-coded for a 128*64 display,
   not calculated to fit a screen with possibly differing dimensions.
 * Error handling in some cases may not be considered "production ready".
-* Coding stile is not always consistent (e.g. usage of `String` vs. `char*`).
+* Coding style is not always consistent (e.g. usage of `String` vs. `char*`).
 * In serving screenshots, HTTP handling is pragmatic, not polite.
 * Code comments are limited to what I personally have found useful
   (e.g. no comment blocks introducing functions, ...).
