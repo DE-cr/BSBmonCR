@@ -98,9 +98,9 @@ the orignal file's basename and a space. One way to do this is by using
 the following command:
 `perl -pe '($x=$ARGV)=~s/\..+/ /;s/^/$x/' ????-??-??.csv >combined.csv`[^1]
 
-[^1]: That is, if you're on Unix. for Windows, use
+[^1]: That is, if you're on Unix. For Windows, use
 `perl -pe "BEGIN{@ARGV=map{glob}@ARGV}($x=$ARGV)=~s/\..+/ /;s/^/$x/" ????-??-??.csv >combined.csv`
-instead to expand the `?` wildcards. Perl is [free](https://perl.org) software.
+instead to expand the `?` wildcards. Perl is [free](https://perl.org) software, btw. :)
 
 ## Notes
 
