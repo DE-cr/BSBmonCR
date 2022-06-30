@@ -104,7 +104,7 @@ instead to expand the `?` wildcards. Perl is [free](https://perl.org) software, 
 
 ## Notes
 
-### Code Comments
+### Coding
 
 * BSB-LAN parameters used are hardcoded in multiple places
   (`BSB-LAN/BSB_LAN_custom_global.h`, `BSBmonCR.ino`, `BSBmonCR_log_viewer.html`). 
