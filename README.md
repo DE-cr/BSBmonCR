@@ -119,7 +119,7 @@ instead to expand the `?` wildcards. Perl is [free](https://perl.org) software, 
 ### Known Issues
 
 * Presence indication via ping is not always reliable
-  (e.g. some cell phones' power savings functions may interfere).
+  (e.g. some cell phones' power saving functions may interfere).
 * The `NTPClient` libary used doesn't validate its deliverables,
   which sometimes leads to wrong values for both date and time;
   this will then lead to surprising file names in dropbox logging,
