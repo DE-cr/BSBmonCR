@@ -1,0 +1,69 @@
+<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01//EN'>
+<!--
+ * BSB-LAN monitor (https://github.com/DE-cr/BSBmonCR)
+ * using esp32 with (optional) ssd1306 display
+ * (file BSBmonCR_log_viewer.html)
+-->
+<!-- let user select yyyy-mm-dd.csv file created by BSBmonCR and plot data -->
+<html>
+  <head>
+    <meta http-equiv='content-type' content='text/html; charset=UTF-8'>
+  </head>
+  <body>
+    <title>BSBmonCR log viewer</title>
+    <input type='file' id='file-input' accept='.csv'
+     onchange='loadFile(this.files[0])'>
+    <div id='c3'></div>
+    <style>
+      svg,.c3-tooltip{font:10px sans-serif}
+      div path,line{fill:none;stroke:#000}
+      .c3-focused{opacity:1;stroke-width:2px}
+      .c3-defocused,.c3-legend-item-hidden{opacity:0.2 !important}
+      .c3-tooltip{opacity:0.5;background-color:#eee}
+      .c3-tooltip th{background-color:#ccc}
+      .c3-tooltip .value{text-align:right}
+    </style>
+    <script src='https://d3js.org/d3.v4.min.js '></script>
+    <script src='https://cdn.jsdelivr.net/npm/c3 '></script>
+    <script>
+      async function loadFile(file){
+        let text = await file.text();
+        let bn = file.name.replace( /^(.*\/)?(.+)(\..+)$/, '$2' );
+        text = text.replace( /,/g, '\t' ) // CSV->TSV
+          // prepend date, if not given:
+          .replace( /^(..:..\t)/gm, bn + ' $1' )
+          // last three values on each line /=10:
+          .replace( /(\d\t\S+)(\d\t\S+)(\d)$/gm, '.$1.$2.$3' )
+        // note: we reverse the original field order for the plot to
+        // 1. show the more interesting fields first and
+        // 2. get more fitting colors for the plot lines
+        let rows = [
+          [ 'Date+Time',
+            '8001 - Status heating circuit 2',
+            '8003 - Status DHW',
+            '8005 - Status boiler',
+            '8700 - Outside temp sensor local',
+            '8770 - Room temp 2 actual value',
+            '8830 - DHW temperature actual value top (B3)'
+          ].reverse( )
+        ];
+        text.split( '\n' ).forEach( function( line ) {
+          rows.push( line.split( '\t' ).reverse( ) );
+        } );
+        let f='%Y-%m-%d %H:%M';
+        c3.generate({
+          bindto:'#c3',
+          data:{
+            rows:rows,
+            x:'Date+Time',
+            xFormat:f
+          },
+          point:{show:false},
+          axis:{x:{type:'timeseries',tick:{count:3,format:f}}},
+          zoom:{enabled:true},
+          size:{height:500}
+        });
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01//EN'>
+<!--
+ * BSB-LAN monitor (https://github.com/DE-cr/BSBmonCR)
+ * using esp32 with (optional) ssd1306 display
+ * (file get_dropbox_token_for_BSBmonCR.html)
+-->
+<html>
+  <head>
+    <meta http-equiv='content-type' content='text/html; charset=UTF-8'>
+  </head>
+  <body>
+    <title>Get Dropbox token for BSBmonCR</title>
+    Use <b><a href="https://www.dropbox.com/oauth2/authorize?client_id=byzpaynsqsbg7pr&token_access_type=offline&response_type=code" target="_blank">this link</a></b>
+    to obtain an initial access code for your Dropbox account,<br>
+    then insert that code into the following text field and click "submit" to receive<br>
+    a value that can be used for DROPBOX_REFRESH_TOKEN in BSBmonCR's config.h,<br>
+    so that BSBmonCR can store log files and screenshots in your Dropbox.<br>
+    <br>
+    <form>
+      <input type="text" id="code">
+      <button type="button" id="submit">submit</button>
+      <br> <br> <output id="msg"></output>
+      <br><code><output id="val"></output></code>
+    </form>
+    <script>
+      document.querySelector('#submit').addEventListener('click',get_code);
+      function get_code() {
+        let xhr = new XMLHttpRequest();
+        xhr.open('POST','https://api.dropbox.com/1/oauth2/token');
+        xhr.setRequestHeader('Authorization','Basic Ynl6cGF5bnNxc2JnN3ByOjVnYW8wdXpzeXVoZXgzYw==');
+        xhr.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
+        xhr.onload = () => {
+          if (xhr.status == 200) {
+            document.querySelector('#msg').textContent = 'Use this in BSBmonCR\'s config.h:';
+            document.querySelector('#val').textContent = '#define DROPBOX_REFRESH_TOKEN "' + JSON.parse(xhr.responseText).refresh_token + '"';
+          } else {
+            document.querySelector('#msg').textContent = 'Sorry, that didn\'t work:';
+            document.querySelector('#val').textContent = JSON.parse(xhr.responseText).error_description;
+          }
+        };
+        xhr.send('grant_type=authorization_code&code='+document.querySelector('#code').value);
+      }
+    </script>
+  </body>
+</html>
