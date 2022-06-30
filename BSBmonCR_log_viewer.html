@@ -51,7 +51,7 @@
           rows.push( line.split( '\t' ).reverse( ) );
         } );
         let f='%Y-%m-%d %H:%M';
-        c3.generate({
+        let c=c3.generate({
           bindto:'#c3',
           data:{
             rows:rows,
