@@ -92,6 +92,16 @@ the CSV files will not contain a heading for the column names!
 
 BSBmonCR's `*.csv` files can be plotted using `BSBmonCR_log_viewer.html`.
 
+Should you wish to view multiple log files combined, create a compiled
+file by concatenating the original files, with each line prefixed by
+the orignal file's basename and a space. One way to do this is by using
+the following command:
+`perl -pe '($x=$ARGV)=~s/\..+/ /;s/^/$x/' ????-??-??.csv >combined.csv`[^1]
+
+[^1]: That is, if you're on Unix. for Windows, use
+`perl -pe "BEGIN{@ARGV=map{glob}@ARGV}($x=$ARGV)=~s/\..+/ /;s/^/$x/" ????-??-??.csv >combined.csv`
+instead to expand the `?` wildcards. Perl is [free](https://perl.org) software.
+
 ## Notes
 
 ### Code Comments
