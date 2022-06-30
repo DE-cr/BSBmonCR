@@ -61,7 +61,8 @@
           point:{show:false},
           axis:{x:{type:'timeseries',tick:{count:3,format:f}}},
           zoom:{enabled:true},
-          size:{height:500}
+          size:{height:window.innerHeight-30},
+          onresize:function(){c.resize({height:window.innerHeight-30})}
         });
       }
     </script>
