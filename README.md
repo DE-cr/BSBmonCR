@@ -106,9 +106,9 @@ instead to expand the `?` wildcards. Perl is [free](https://perl.org) software, 
 
 ### Coding
 
-* BSB-LAN parameters used are hardcoded in multiple places
+* BSB-LAN parameters used are hard coded in multiple places
   (`BSB-LAN/BSB_LAN_custom_global.h`, `BSBmonCR.ino`, `BSBmonCR_log_viewer.html`). 
-* In most places, screen coordinates are hard-coded for a 128*64 display,
+* In most places, screen coordinates are hard coded for a 128*64 display,
   not calculated to fit a screen with possibly differing dimensions.
 * Error handling in some cases may not be considered "production ready".
 * Coding style is not always consistent (e.g. usage of `String` vs. `char*`).
