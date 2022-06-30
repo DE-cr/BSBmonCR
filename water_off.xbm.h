@@ -1,11 +1,10 @@
 /*
- * BSB-LAN monitor
- * by user -cr at forum.fhem.de
- * using esp32 with ssd1306 display
- * inspired by https://forum.fhem.de/index.php/topic,110599.0.html
+ * BSB-LAN monitor (https://github.com/DE-cr/BSBmonCR)
+ * using esp32 with (optional) ssd1306 display
  * (file water_off.xbm.h)
  */
 
+// icon used from https://forum.fhem.de/index.php/topic,110599.0.html
 #define water_off_width 20
 #define water_off_height 20
 static unsigned char water_off_bits[] = {
