@@ -86,9 +86,9 @@ representing the current day. They will be updated as specified in
 data logs as comma separated value text files (`*.csv`) with a single
 line for each minute, giving the timestamp (hh:mm) and the values for
 the logged parameters at that time. The values are logged as
-received via UDP, i.e. temperatures are multipled by ten
+received via UDP, i.e. temperatures are multiplied by ten
 (e.g. `20.1 °C` will be logged as `201`). For simplicity reasons,
-the CSV files will not contain a heading for the column names!
+the CSV files will not contain a heading for the column names.
 
 BSBmonCR's `*.csv` files can be plotted using `BSBmonCR_log_viewer.html`.
 
