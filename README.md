@@ -128,6 +128,3 @@ instead to expand the `?` wildcards. Perl is [free](https://perl.org) software, 
   will be read and continued when switching to a new `yyyy-mm-dd`.
   (This measure also limits log data loss when restarting your
   BSBmonCR unit.)
-* I would have liked to have `BSBmonCR_log_viewer.html` use the full
-  browser window height, but couldn't figure out how to do that.
-  (Please let me know if you do!)
