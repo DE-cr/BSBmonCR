@@ -8,7 +8,7 @@
 
 #include "config.h"
 
-#define BSBmonCRversion "0.4.0"
+#define BSBmonCRversion "0.5.0"
 #define HELLO "-- Welcome to BSBmonCR v" BSBmonCRversion "! --"
 
 #define BIN_WIDTH_S ( 24*60*60 / DATA_SIZE ) // set to e.g. 60 for plot speedup in testing
@@ -513,6 +513,22 @@ void loop( ) {
         if ( ipadr[ addr ][ ( pos + DATA_SIZE - i ) % DATA_SIZE ].sum )
           oled.drawPixel( 127-i, 63-(N_ADDR_TO_CHECK-1)+addr );
     }
+    #ifdef WITH_NERDY_TIMESTAMP_DISPLAY
+    unsigned short yyyy;
+    byte mm, dd;
+    char date[11];
+    sscanf( epoch2date( timeClient.getEpochTime(), date ), "%d-%d-%d", &yyyy, &mm, &dd );
+    unsigned long bits = yyyy<<16ul | mm<<8ul | dd;
+    int y = 63 - PLOT_REDUCTION * 3;
+    for ( int x=0;  x < 32;  ++x )
+      if ( bits & 1ul << ( 31 - x ) )
+        oled.drawPixel( x, y );
+    byte HH=timeClient.getHours(), MM=timeClient.getMinutes(), SS=timeClient.getSeconds();
+    bits = HH<<16ul | MM<<8ul | SS;
+    for ( int x=0;  x < 24;  ++x )
+      if ( bits & 1ul << ( 23 - x ) )
+        oled.drawPixel( x + 32, y );
+    #endif
     oled.sendBuffer( );
   }
   //- HTTP client request?:
