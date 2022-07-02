@@ -24,3 +24,9 @@
 // when to write files to dropbox (hh:mm ending like this? -> write!; use "" for every minute):
 #define DROPBOX_BMP_WRITE_TIME_PATTERN ":00"  // keeping bmp and csv writing separate (not required)
 #define DROPBOX_CSV_WRITE_TIME_PATTERN ":30"  // note: will also be forced when entering a new day
+
+//- define the following, depending on your nerd status: ;)
+//#define WITH_NERDY_TIMESTAMP_DISPLAY
+// uses area to the left of the boiler status display line to binary encode yyyy-mm-dd_HH:MM:SS,
+// item by item; to decode, use the following command on a screenshot received from BSBmonCR:
+// perl Decode_nerdy_timestamp_in_BSBmonCR_screenshot.pl
