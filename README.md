@@ -48,15 +48,7 @@ as in the currently running 20 minutes. Vertically, the plots scale
 automatically to fully use the limited space available. They will look best
 once the first 24 hours have elapsed and the plots take up their whole width.
 
-### Screenshots via HTTP
-
-Introduced with v0.2.0
-
-You should also be able to display BSBmonCR screen contents
-(even without an ssd1306 display attached) on any web browser in your network
-by loading `http://<your-BSBmonCR-address>/`
-
-### Presence Indicator
+#### Presence Indicator
 
 Introduced with v0.3.0 (first version on GitHub)
 
@@ -64,12 +56,39 @@ You can add a presence check for computer systems (e.g. cell phones, which
 roughly translates to people) in your network. Note that for simplicity
 reasons this has been implemented using ping, which is not the most
 reliable method. If you are willing to sacrifice some display space for
-this feature, `#define ADDR_TO_CHECK` in `BSBmonCR.ino`.
+this feature, `#define ADDR_TO_CHECK` in `config.h`.
 
 If activated, each of the systems monitored will take up a single pixel
 row at the bottom of the screen, plus 0-2 empty lines above them (none
 for the number of monitored systems being multiples of three (3/6/...),
 one empty line for 2/5/8/... systems, two for 1/4/7/...).
+
+#### Nerdy Timestamp
+
+Introduced with v0.5.0
+
+With `#define WITH_NERDY_TIMESTAMP_DISPLAY` in `config.h`, a binary
+encoding of the current date and time will be displayed to the left
+of the boiler status line. Note that this display will only be
+updated when BSBmonCR either receives data via UDP, updates one of
+the presence indicators (if configured), or advances the rolling
+plots.
+
+Use `perl Decode_nerdy_timestamp_in_BSBmonCR_screenshot.pl` to
+decode the timestamp in bitmaps received from BSBmonCR, either
+providing a bitmap file name as an argument to this script,
+or feeding it such content directly, e.g. by prepending the following
+to the command above: `wget -qO- BSBmonCR |` (i.e. if `BSBmonCR` is the
+name of your BSBmonCR system in your network; replace with the right
+name or IP address, if necessary).
+
+### Screenshots via HTTP
+
+Introduced with v0.2.0
+
+You should also be able to display BSBmonCR screen contents
+(even without an ssd1306 display attached) on any web browser in your network
+by loading `http://<your-BSBmonCR-address>/`
 
 ### Logging to a Dropbox Account
 
