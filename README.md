@@ -147,3 +147,11 @@ instead to expand the `?` wildcards. Perl is [free](https://perl.org) software, 
   will be read and continued when switching to a new `yyyy-mm-dd`.
   (This measure also limits log data loss when restarting your
   BSBmonCR unit.)
+* In some instances, `*.csv`files may contain garbage. I have yet to figure
+  out when that happens. (Multiple BSBmonCR instances running and trying
+  to write those files simultaneously? General problem with my Dropbox
+  read/write routines??) To remove ~~any~~most of the offending data,
+  you could use the following command on those files:
+  `perl -ni.bak -e'tr/:,0-9\n//cd; print if tr/,//==6 && /^\d\d:\d\d,/'`[^2]
+
+[^2]: On Windows, use double quotes instead of single quotes.
