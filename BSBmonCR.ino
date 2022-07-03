@@ -8,7 +8,7 @@
 
 #include "config.h"
 
-#define BSBmonCRversion "0.5.0"
+#define BSBmonCRversion "0.5.1"
 #define HELLO "-- Welcome to BSBmonCR v" BSBmonCRversion "! --"
 
 #define BIN_WIDTH_S ( 24*60*60 / DATA_SIZE ) // set to e.g. 60 for plot speedup in testing
@@ -528,6 +528,11 @@ void loop( ) {
     for ( int x=0;  x < 24;  ++x )
       if ( bits & 1ul << ( 23 - x ) )
         oled.drawPixel( x + 32, y );
+    #ifdef LSB_MARKERS_FOR_NERDY_TIMESTAMP
+    y = y==63 ? --y : ++y;  // below timestamp, if possible, otherwise above
+    for ( int i=0;  i<7;  ++i )
+      oled.drawPixel( 8*i+7, y );
+    #endif
     #endif
     oled.sendBuffer( );
   }
