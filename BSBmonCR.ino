@@ -8,7 +8,7 @@
 
 #include "config.h"
 
-#define BSBmonCRversion "0.5.1"
+#define BSBmonCRversion "0.5.2"
 #define HELLO "-- Welcome to BSBmonCR v" BSBmonCRversion "! --"
 
 #define BIN_WIDTH_S ( 24*60*60 / DATA_SIZE ) // set to e.g. 60 for plot speedup in testing
@@ -220,7 +220,7 @@ bool updateDropboxToken( ) {
     client.print( request.length( ) );
     client.print( "\r\n\r\n" );
     client.print( request );
-    while ( client.connected( ) && ! client.available( ) ) delay( 100 );
+    while ( client.connected( ) && ! client.available( ) ) delay( 10 );
     String response = client.connected() ? client.readStringUntil('\n') : "diconnected";
     Serial.println( response );
     success = response == "HTTP/1.1 200 OK\r";
@@ -267,7 +267,7 @@ bool readFromDropbox( const char* path, const char* basename, const char* extens
                     "Dropbox-API-Arg: {\"path\":\"" );
       client.print( fn );
       client.print( "\"}\r\n\r\n" );
-      while ( client.connected( ) && ! client.available( ) ) delay( 100 );
+      while ( client.connected( ) && ! client.available( ) ) delay( 10 );
       String response = client.connected() ? client.readStringUntil('\n') : "diconnected";
       Serial.println( response );
       success = response == "HTTP/1.1 200 OK\r";
@@ -279,8 +279,9 @@ bool readFromDropbox( const char* path, const char* basename, const char* extens
       }
       if ( success )
         for ( size = 0;  client.connected() && size < data_size && size < max_size;  ++size, ++data ) {
+          // WAIT for client data, just to be safe:
+          while ( client.connected( ) && ! client.available( ) ) delay( 10 );
           *data = client.read( );
-          if ( size % CHUNK_SIZE == 0 ) yield( ); // just to be safe
         }
       client.stop( );
       Serial.print( size );
@@ -322,9 +323,8 @@ bool send2dropbox( const char* path, const char* basename, const char* extension
         client.write( data, n );
         data += n;
         size -= n;
-        yield( ); // just to be safe
       }
-      while ( client.connected( ) && ! client.available( ) ) delay( 100 );
+      while ( client.connected( ) && ! client.available( ) ) delay( 10 );
       String response = client.connected() ? client.readStringUntil('\n') : "diconnected";
       Serial.println( response );
       success = response == "HTTP/1.1 200 OK\r";
@@ -400,8 +400,8 @@ void loop( ) {
       i_addr_to_check = 0;
     Serial.print( addr_to_check[ i_addr_to_check ] );
     Serial.print( ':' );
+    // ping takes about 1.2 s (!) on my system
     addr_available[ i_addr_to_check ] = Ping.ping( addr_to_check[ i_addr_to_check ], 1 );
-    yield( ); // just to be safe
     Serial.println( addr_available[ i_addr_to_check ] );
     log_data( &ipadr[i_addr_to_check][pos], addr_available[i_addr_to_check] ? 1 : 0 );
     screen_update_reqd = 1;
@@ -447,6 +447,17 @@ void loop( ) {
     //- new data -> log!:
     if ( recent_set == 0x3F ) { // only when all params have been set
       timeClient.update( );
+      for ( int i=0; i<3; ++i ) {
+        // trying to work around NTPClient's sometimes returning bogus values
+        unsigned long epochTime = timeClient.getEpochTime( );
+        if ( epochTime > 50 * 365ul * 24 * 60 * 60 &&  // year ca. 2020
+             epochTime < 65 * 365ul * 24 * 60 * 60 )   // year ca. 2035
+          break;
+        Serial.print( "NTPClient_fail:" );
+        Serial.println( epochTime );
+        delay( 100 );
+        timeClient.forceUpdate( );
+      }
       sprintf( time_now, "%02d:%02d", timeClient.getHours( ), timeClient.getMinutes( ) );
       if ( strcmp( time_now, time_prev ) ) { // new hh:mm
         if ( !access_token_ok ||
@@ -537,6 +548,7 @@ void loop( ) {
     oled.sendBuffer( );
   }
   //- HTTP client request?:
+  // (takes about 35 ms on my system)
   WiFiClient client = server.available( );
   if ( client ) {
     unsigned char buf[ 999 ];  // to hold a single line from client
