@@ -30,3 +30,4 @@
 // uses area to the left of the boiler status display line to binary encode yyyy-mm-dd_HH:MM:SS,
 // item by item; to decode, use the following command on a screenshot received from BSBmonCR:
 // perl Decode_nerdy_timestamp_in_BSBmonCR_screenshot.pl
+#define LSB_MARKERS_FOR_NERDY_TIMESTAMP // to improve readability for humans
