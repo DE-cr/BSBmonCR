@@ -143,10 +143,10 @@ to a new `yyyy-mm-dd`.
 
 * Presence indication via ping is not always reliable
   (e.g. some cell phones' power saving functions may interfere).
-* In some instances, `*.csv`files may contain garbage. I have yet to figure
+* In some instances, `*.csv` files may contain garbage. I have yet to figure
   out when that happens. (Multiple BSBmonCR instances running and trying
   to write those files simultaneously? General problem with my Dropbox
-  read/write routines??) To remove ~~any~~most of the offending data,
+  read+write routine??) To remove ~~any~~most of the offending data,
   you could use the following command on those files:
   `perl -ni.bak -e'tr/:,0-9\n//cd; print if tr/,//==6 && /^\d\d:\d\d,/'`[^2]
 
