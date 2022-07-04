@@ -121,6 +121,10 @@ the following command:
 `perl -pe "BEGIN{@ARGV=map{glob}@ARGV}($x=$ARGV)=~s/\..+/ /;s/^/$x/" ????-??-??.csv >combined.csv`
 instead to expand the `?` wildcards. Perl is [free](https://perl.org) software, btw. :)
 
+To limit log data loss when restarting your BSBmonCR unit,
+existing `*.csv` files will be read and continued when switching
+to a new `yyyy-mm-dd`.
+
 ## Notes
 
 ### Coding
@@ -139,14 +143,6 @@ instead to expand the `?` wildcards. Perl is [free](https://perl.org) software, 
 
 * Presence indication via ping is not always reliable
   (e.g. some cell phones' power saving functions may interfere).
-* The `NTPClient` libary used doesn't validate its deliverables,
-  which sometimes leads to wrong values for both date and time;
-  this will then lead to surprising file names in dropbox logging,
-  e.g. `2036-02-07.*`. To alleviate the effects of such events (which
-  usually should be fixed after one minute), existing `*.csv` files
-  will be read and continued when switching to a new `yyyy-mm-dd`.
-  (This measure also limits log data loss when restarting your
-  BSBmonCR unit.)
 * In some instances, `*.csv`files may contain garbage. I have yet to figure
   out when that happens. (Multiple BSBmonCR instances running and trying
   to write those files simultaneously? General problem with my Dropbox
