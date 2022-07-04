@@ -29,8 +29,8 @@
 #include <WiFi.h>
 #include <WiFiUdp.h>
 #include <ESP32Ping.h>
-#include <NTPClient.h>
 #include <WiFiClientSecure.h>
+#include "NTPClientFix.h"
 
 //-- vars:
 
@@ -447,17 +447,7 @@ void loop( ) {
     //- new data -> log!:
     if ( recent_set == 0x3F ) { // only when all params have been set
       timeClient.update( );
-      for ( int i=0; i<3; ++i ) {
-        // trying to work around NTPClient's sometimes returning bogus values
-        unsigned long epochTime = timeClient.getEpochTime( );
-        if ( epochTime > 50 * 365ul * 24 * 60 * 60 &&  // year ca. 2020
-             epochTime < 65 * 365ul * 24 * 60 * 60 )   // year ca. 2035
-          break;
-        Serial.print( "NTPClient_fail:" );
-        Serial.println( epochTime );
-        delay( 100 );
-        timeClient.forceUpdate( );
-      }
+      NTPClientFix( timeClient );
       sprintf( time_now, "%02d:%02d", timeClient.getHours( ), timeClient.getMinutes( ) );
       if ( strcmp( time_now, time_prev ) ) { // new hh:mm
         if ( !access_token_ok ||
