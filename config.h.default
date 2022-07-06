@@ -21,7 +21,7 @@
 #define DROPBOX_REFRESH_TOKEN     "--- Use 'Get_Dropbox_token_for_BSBmonCR.html' to get yours! ----"
 // where to put files in your dropbox:
 #define DROPBOX_PATH "/etc/BSB-Log/bsb-mon/"  // must start and end with '/'!
-// when to write files to dropbox (hh:mm ending like this? -> write!; use "" for every minute):
+// when to write files to dropbox (hh:mm ending like this? -> write!; "" = every minute, "-" = never):
 #define DROPBOX_BMP_WRITE_TIME_PATTERN ":00"  // keeping bmp and csv writing separate (not required)
 #define DROPBOX_CSV_WRITE_TIME_PATTERN ":30"  // note: will also be forced when entering a new day
 
