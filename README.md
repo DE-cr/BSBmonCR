@@ -123,7 +123,20 @@ instead to expand the `?` wildcards. Perl is [free](https://perl.org) software, 
 
 To limit log data loss when restarting your BSBmonCR unit,
 existing `*.csv` files will be read and continued when switching
-to a new `yyyy-mm-dd`.
+to a new `yyyy-mm-dd`. Performing an OTA Update (c.f. below) will
+force `*.csv` writing immediately before the device's reset and reload
+the data from the file and continue it after the reset.
+
+### OTA Update
+
+Introduced with v0.6.0
+
+By loading `http://<your-BSBmonCR-address>:8080/` in your web browser,
+you can update you BSBmonCR's software "over the air" (OTA).
+There you can upload a file created via `Sketch -> Export compiled binary file...`
+in the Arduino IDE. (Of course this works only with an esp32 already
+running OTA enabled software, i.e. the first time you have to load the
+BSBmonCR software onto your esp32 via USB.)
 
 ## Notes
 
@@ -143,7 +156,7 @@ to a new `yyyy-mm-dd`.
 
 * Presence indication via ping is not always reliable
   (e.g. some cell phones' power saving functions may interfere).
-* In some instances, `*.csv` files may contain garbage. I have yet to figure
+* In some rare instances, `*.csv` files may contain garbage. I have yet to figure
   out when that happens. (Multiple BSBmonCR instances running and trying
   to write those files simultaneously? General problem with my Dropbox
   read+write routine??) To remove ~~any~~most of the offending data,
