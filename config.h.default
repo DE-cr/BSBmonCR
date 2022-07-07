@@ -23,7 +23,7 @@
 #define DROPBOX_PATH "/etc/BSB-Log/bsb-mon/"  // must start and end with '/'!
 // when to write files to dropbox (hh:mm ending like this? -> write!; "" = every minute, "-" = never):
 #define DROPBOX_BMP_WRITE_TIME_PATTERN ":00"  // keeping bmp and csv writing separate (not required)
-#define DROPBOX_CSV_WRITE_TIME_PATTERN ":30"  // note: will also be forced when entering a new day
+#define DROPBOX_CSV_WRITE_TIME_PATTERN ":30"  // will also be forced when entering a new day or on OTA update!
 
 //- define the following, depending on your nerd status: ;)
 //#define WITH_NERDY_TIMESTAMP_DISPLAY
