@@ -8,7 +8,7 @@
 
 #include "config.h"
 
-#define BSBmonCRversion "0.5.2"
+#define BSBmonCRversion "0.6.0"
 #define HELLO "-- Welcome to BSBmonCR v" BSBmonCRversion "! --"
 
 #define BIN_WIDTH_S ( 24*60*60 / DATA_SIZE ) // set to e.g. 60 for plot speedup in testing
@@ -23,6 +23,8 @@
 
 #define UPDATE_DROPBOX_TOKEN_AT ":15" // when hh:mm ends like this
 
+#define OTA_UPDATE_PORT 8080
+
 //-- libs:
 
 #include <U8g2lib.h>
@@ -31,6 +33,8 @@
 #include <ESP32Ping.h>
 #include <WiFiClientSecure.h>
 #include "NTPClientFix.h"
+#include <WebServer.h>
+#include <Update.h>
 
 //-- vars:
 
@@ -94,6 +98,13 @@ unsigned long log_size = 0;
 #define MAX_TOKEN_LENGTH 150 // the ones I've seen are 139 chars each
 char dropbox_access_token[ MAX_TOKEN_LENGTH + 1 ];
 bool access_token_ok = false;
+
+WebServer update_server( OTA_UPDATE_PORT );
+const char* update_server_index =
+  "<form method='POST' action='/update' enctype='multipart/form-data'>"
+    "<input type='file' name='update'>"
+    "<input type='submit' value='Update'>"
+  "</form>";
 
 //-- code:
 
@@ -336,6 +347,38 @@ bool send2dropbox( const char* path, const char* basename, const char* extension
   }
 }
 
+void init_ota_update( ) {
+  update_server.on( "/", HTTP_GET, []() {
+    update_server.sendHeader( "Connection", "close" );
+    update_server.send( 200, "text/html", update_server_index );
+  });
+  update_server.on( "/update", HTTP_POST, []() {
+    update_server.sendHeader( "Connection", "close" );
+    update_server.send( 200, "text/plain", Update.hasError( ) ? "Failed" : "Success" );
+    if ( log_size )
+      send2dropbox( DROPBOX_PATH, date_prev, ".csv", (byte*)complete_log, log_size, 2 );
+    ESP.restart( );
+  }, []() {
+    HTTPUpload& upload = update_server.upload( );
+    if ( upload.status == UPLOAD_FILE_START ) {
+      Serial.println( "Updating ESP32 firmware..." );
+      if ( ! Update.begin( UPDATE_SIZE_UNKNOWN ) ) // start with max available size
+        Update.printError( Serial );
+    } else if ( upload.status == UPLOAD_FILE_WRITE ) {
+      if ( Update.write( upload.buf, upload.currentSize ) != upload.currentSize )
+        Update.printError( Serial );
+    } else if ( upload.status == UPLOAD_FILE_END ) {
+      if ( Update.end( true ) ) // true to set the size to the current progress
+        Serial.println( "Update success, rebooting..." );
+      else
+        Update.printError( Serial );
+    }
+  });
+  update_server.begin( );
+  Serial.print( "Update server started on port " );
+  Serial.println( OTA_UPDATE_PORT );
+}
+
 void setup( ) {
   Serial.begin( 115200 );
   Serial.println( HELLO );
@@ -357,6 +400,7 @@ void setup( ) {
   timeClient.begin( );
   *date_prev = *time_prev = 0;
   *dropbox_access_token = 0;
+  init_ota_update( );
   Serial.println( "setup() done." );
 }
 
@@ -563,4 +607,6 @@ void loop( ) {
     client.stop( );
     Serial.println( );
   }
+  //-
+  update_server.handleClient( );
 }
