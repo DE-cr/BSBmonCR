@@ -109,23 +109,34 @@ received via UDP, i.e. temperatures are multiplied by ten
 (e.g. `20.1 °C` will be logged as `201`). For simplicity reasons,
 the CSV files will not contain a heading for the column names.
 
-BSBmonCR's `*.csv` files can be plotted using `BSBmonCR_log_viewer.html`.
+To limit log data loss when restarting your BSBmonCR unit,
+existing `*.csv` files will be read and continued when switching
+to a new `yyyy-mm-dd`. Performing an OTA Update (c.f. below) will
+force `*.csv` writing immediately before the device's reset and reload
+the data from the file and continue it after the reset.
+
+#### Data Log Viewing
+
+BSBmonCR's `*.csv` files can be plotted using `BSBmonCR_log_viewer.html`,
+which provides zoom and scroll functionality as well as data line
+highlighting / disabling.
 
 Should you wish to view multiple log files combined, create a compiled
 file by concatenating the original files, with each line prefixed with
 the orignal file's basename and a space. One way to do this is by using
 the following command:
 `perl -pe '($x=$ARGV)=~s/\..+/ /;s/^/$x/' ????-??-??.csv >combined.csv`[^1]
+As these combined files may overload `BSBmonCR_log_viewer.html` (especially
+with a complete month's data or even more), you may want to create
+reduced versions for display, e.g. by removing all but the
+minute-is-divisible-by-ten data lines through processing the files with
+`perl -ne 'print if /:.0,/'`.[^2]
 
 [^1]: That is, if you're on Unix. For Windows, use
 `perl -pe "BEGIN{@ARGV=map{glob}@ARGV}($x=$ARGV)=~s/\..+/ /;s/^/$x/" ????-??-??.csv >combined.csv`
 instead to expand the `?` wildcards. Perl is [free](https://perl.org) software, btw. :)
 
-To limit log data loss when restarting your BSBmonCR unit,
-existing `*.csv` files will be read and continued when switching
-to a new `yyyy-mm-dd`. Performing an OTA Update (c.f. below) will
-force `*.csv` writing immediately before the device's reset and reload
-the data from the file and continue it after the reset.
+[^2]: On Windows, use double quotes instead of single quotes.
 
 ### OTA Update
 
@@ -162,5 +173,3 @@ BSBmonCR software onto your esp32 via USB.)
   read+write routine??) To remove ~~any~~most of the offending data,
   you could use the following command on those files:
   `perl -ni.bak -e'tr/:,0-9\n//cd; print if tr/,//==6 && /^\d\d:\d\d,/'`[^2]
-
-[^2]: On Windows, use double quotes instead of single quotes.
