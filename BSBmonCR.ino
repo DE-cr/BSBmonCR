@@ -8,7 +8,7 @@
 
 #include "config.h"
 
-#define BSBmonCRversion "0.6.0"
+#define BSBmonCRversion "0.6.1"
 #define HELLO "-- Welcome to BSBmonCR v" BSBmonCRversion "! --"
 
 #define BIN_WIDTH_S ( 24*60*60 / DATA_SIZE ) // set to e.g. 60 for plot speedup in testing
@@ -57,6 +57,7 @@ WiFiServer server( 80 );
 const char* addr_to_check[] = { ADDR_TO_CHECK };
 #define N_ADDR_TO_CHECK ( sizeof( addr_to_check ) / sizeof( *addr_to_check ) )
 #define PLOT_REDUCTION ( ( N_ADDR_TO_CHECK + 2 ) / 3 )
+#define ICON_SHIFT ( PLOT_REDUCTION ? -1 : 0 )
 bool addr_available[ N_ADDR_TO_CHECK ];
 int i_addr_to_check = 0;
 unsigned long last_addr_check_ms = 0;
@@ -536,13 +537,13 @@ void loop( ) {
   if ( screen_update_reqd ) {
     oled.clearBuffer( );
     // symbols and current values on the left:
-    draw_temp( outsd_temp,  0, outside_bits );
-    draw_temp( rooms_temp, 21 - PLOT_REDUCTION,
+    draw_temp( outsd_temp,  0 + ICON_SHIFT, outside_bits );
+    draw_temp( rooms_temp, 21 + ICON_SHIFT - PLOT_REDUCTION,
                rooms_heating ? house_on_bits : house_off_bits );
-    draw_temp( water_temp, 42 - PLOT_REDUCTION * 2,
+    draw_temp( water_temp, 42 + ICON_SHIFT - PLOT_REDUCTION * 2,
                water_heating ? water_on_bits : water_off_bits );
-    // addr presence bars on lower left:           
-    #define len ( ( 128 - DATA_SIZE ) / N_ADDR_TO_CHECK )
+    // addr presence bars on lower left:
+    #define len ( ( 128 - DATA_SIZE ) / ( N_ADDR_TO_CHECK ? N_ADDR_TO_CHECK : 1 ) )
     for ( int addr=0; addr<N_ADDR_TO_CHECK; ++addr )
       if ( addr_available[ addr ] )
         oled.drawLine( addr*len, 62, (addr+1)*len-2, 62 );
