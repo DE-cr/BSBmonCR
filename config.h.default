@@ -18,7 +18,7 @@
 //- define the following to periodically transfer screenshot and csv log file to your dropbox account:
 //#define USE_DROPBOX
 // your token should be 64 chars!: 1234567890123456789012345678901234567890123456789012345678901234
-#define DROPBOX_REFRESH_TOKEN     "--- Use 'Get_Dropbox_token_for_BSBmonCR.html' to get yours! ----"
+#define DROPBOX_REFRESH_TOKEN     "(Use 'tools/Get_Dropbox_token_for_BSBmonCR.html' to get yours!!)"
 // where to put files in your dropbox:
 #define DROPBOX_PATH "/etc/BSB-Log/bsb-mon/"  // must start and end with '/'!
 // when to write files to dropbox (hh:mm ending like this? -> write!; "" = every minute, "-" = never):
