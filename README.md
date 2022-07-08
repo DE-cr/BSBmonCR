@@ -160,13 +160,17 @@ BSBmonCR software onto your esp32 via USB.)
 
 Example data log (see [above](#logging-to-a-dropbox-account) for information on
 how to create these):
+
 ![Data Log View Example](images/BSBmonCR_log_view_example.png)
+
 Temperature values are in °C, status values as provided by
 [BSB-LAN](https://github.com/fredlcore/bsb-lan).
 
 Corresponding BSBmonCR screen contents (enlarged and color coded for explanation /
 correlation to log view above):
+
 ![BSBmon screen contents](images/BSBmonCR_screen_example_with_color_coding.png)
+
 The screen example shows [presence indication](#presence-indicator)
 for four cell phones configured (bottom four "pixel" lines),
 as well as [timestamp encoding](#nerdy-timestamp) enabled (light
@@ -178,9 +182,11 @@ below to mark the LSBs (least significant bits) of each byte
 -> 2022-07-08,16:35:19 :)
 
 Naked esp32 fitted with ssd1306 display:
-![ESP32 with Display](images/BSBmonCR-.jpg)
+
+![ESP32 with Display](images/BSBmonCR_naked.jpg)
 
 Wall mounted BSBmonCR system (I'm lacking the tools to fit the display *in* the case):
+
 ![Wall mounted system](images/BSBmonCR.jpg)
 
 ## Notes
