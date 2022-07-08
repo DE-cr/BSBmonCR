@@ -1,7 +1,7 @@
 # BSBmonCR
 **BSB-LAN monitor by user -cr**
 
-![BSBmonCR](BSBmonCR.gif)
+![BSBmonCR](images/BSBmonCR.gif)
 
 Monitoring some heating related parameters via [BSB-LAN](https://github.com/fredlcore/bsb-lan),
 using an esp32 board (optionally) fitted with an ssd1306 display.
@@ -74,7 +74,8 @@ updated when BSBmonCR either receives data via UDP, updates one of
 the presence indicators (if configured), or advances the rolling
 plots.
 
-Use `perl Decode_nerdy_timestamp_in_BSBmonCR_screenshot.pl` to
+Use `perl Decode_nerdy_timestamp_in_BSBmonCR_screenshot.pl`
+(from the `tools` directory) to
 decode the timestamp in bitmaps received from BSBmonCR, either
 providing a bitmap file name as an argument to this script,
 or feeding it such content directly, e.g. by prepending the following
@@ -117,7 +118,8 @@ the data from the file and continue it after the reset.
 
 #### Data Log Viewing
 
-BSBmonCR's `*.csv` files can be plotted using `BSBmonCR_log_viewer.html`,
+BSBmonCR's `*.csv` files can be plotted using `BSBmonCR_log_viewer.html`
+(from the `tools` directory),
 which provides zoom and scroll functionality as well as data line
 highlighting / disabling.
 
