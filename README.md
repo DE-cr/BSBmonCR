@@ -33,6 +33,9 @@ on the BSBmonCR unit.
 
 ### Display Contents
 
+(For examples, see the animated GIF at the [top](#bsbmoncr) of this page
+or more [below](#example-images).)
+
 Outside, room and water temperature (current value and preceding 24 h plot)
 are displayed. There's also a thin line below the temperature plots, showing
 when the boiler was active.
@@ -152,6 +155,26 @@ There you can upload a file created via `Sketch -> Export compiled binary file..
 in the Arduino IDE. (Of course this works only with an esp32 already
 running OTA enabled software, i.e. the first time you have to load the
 BSBmonCR software onto your esp32 via USB.)
+
+## Example Images
+
+Example data log (see [above](#logging-to-a-dropbox-account) for information on
+how to create these):
+![Data Log View Example](images/BSBmonCR_log_view_example.png)
+
+Correlating BSBmonCR screen contents (enlarged and color coded for explanation /
+correlation to log view above):
+![BSBmon screen contents](images/BSBmonCR_screen_example_with_color_coding.png)
+
+The screen example shows [presence indication](#presence-indicator)
+for four cell phones configured (bottom four "pixel" lines),
+as well as [timestamp encoding](#nerdy-timestamp) enabled (light
+blue bit pattern[^3]).
+
+[^3]: -----XXX XXX--XX- = 2022, -----XXX = 7, ----X--- = 8,
+---X---- = 16, --X---XX = 35, ---X--XX = 19 (with a line
+below to mark the LSBs (least significant bits) of each byte
+-> 2022-07-08,16:35:19 :)
 
 ## Notes
 
