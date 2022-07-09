@@ -97,8 +97,8 @@ by loading `http://<your-BSBmonCR-address>/`
 
 Introduced with v0.4.0
 
-Periodic saving of both screenshots (c.f. above) and log files to a
-Dropbox account can be enabled in `config.h`. For this function to work,
+Periodic saving of both [screenshots](#screenshots-via-http) and log files
+to a Dropbox account can be enabled in `config.h`. For this function to work,
 read/write access permission must be granted to BSBmonCR; to achieve
 this, load `Get_Dropbox_token_for_BSBmonCR.html` (from the `tools`
 directory) in your web browser and follow the instructions.
