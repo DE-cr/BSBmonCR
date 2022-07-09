@@ -201,7 +201,7 @@ Wall mounted BSBmonCR system (I'm lacking the tools to fit the display *in* the 
 ### Coding
 
 * BSB-LAN parameters used are hard coded in multiple places
-  (`BSB-LAN/BSB_LAN_custom_global.h`, `BSBmonCR.ino`, `BSBmonCR_log_viewer.html`). 
+  (`BSB-LAN/BSB_LAN_custom_global.h`, `BSBmonCR.ino`, `tools/BSBmonCR_log_viewer.html`). 
 * In most places, screen coordinates are hard coded for a 128*64 display,
   not calculated to fit a screen with possibly differing dimensions.
 * Error handling in some cases may not be considered "production ready".
