@@ -8,7 +8,7 @@
 
 #include "config.h"
 
-#define BSBmonCRversion "0.6.1"
+#define BSBmonCRversion "0.6.2"
 #define HELLO "-- Welcome to BSBmonCR v" BSBmonCRversion "! --"
 
 #define BIN_WIDTH_S ( 24*60*60 / DATA_SIZE ) // set to e.g. 60 for plot speedup in testing
@@ -457,37 +457,43 @@ void loop( ) {
     memset( udp_buf, 0, UDP_BUF_SIZE );
     udp.read( udp_buf, UDP_BUF_SIZE-1 );
     Serial.println( udp_buf );
-    int par, val;
-    if ( 2 == sscanf( udp_buf, "%d:%d", &par, &val ) )
-      switch ( par ) {
-        #define ADD_TO_LOG(i) { recent[i] = val;  recent_set |= 1 << i; } while ( 0 )
-        case 8001: rooms_heating = 111 <= val && val <= 116;
-                   screen_update_reqd = 1;
-                   ADD_TO_LOG( 0 );
-                   break;
-        case 8003: water_heating =  80 <= val && val <=  97;
-                   screen_update_reqd = 1;
-                   ADD_TO_LOG( 1 );
-                   break;
-        case 8005: log_data( &heatg[pos], val != 25 ? 1 : 0 );
-                   screen_update_reqd = 1;
-                   ADD_TO_LOG( 2 );
-                   break;
-        case 8700: outsd_temp = 0.1 * val;
-                   log_data( &outsd[pos], val );
-                   screen_update_reqd = 1;
-                   ADD_TO_LOG( 3 );
-                   break;
-        case 8770: rooms_temp = 0.1 * val;
-                   log_data( &rooms[pos], val );
-                   screen_update_reqd = 1;
-                   ADD_TO_LOG( 4 );
-                   break;
-        case 8830: water_temp = 0.1 * val;
-                   log_data( &water[pos], val );
-                   screen_update_reqd = 1;
-                   ADD_TO_LOG( 5 );
-                   break;
+    int param, value;
+    if ( 2 == sscanf( udp_buf, "%d:%d", &param, &value ) )
+      switch ( param ) {
+        #define ADD_TO_LOG(i) { recent[i] = value;  recent_set |= 1 << i; } while ( 0 )
+        case HEATING_STATUS:
+          rooms_heating = ROOMS_HEATING;
+          screen_update_reqd = 1;
+          ADD_TO_LOG( 0 );
+          break;
+        case WATER_STATUS:
+          water_heating = WATER_HEATING;
+          screen_update_reqd = 1;
+          ADD_TO_LOG( 1 );
+          break;
+        case BOILER_STATUS:
+          log_data( &heatg[pos], BOILER_RUNNING ? 1 : 0 );
+          screen_update_reqd = 1;
+          ADD_TO_LOG( 2 );
+          break;
+        case OUTSIDE_TEMPERATURE:
+          outsd_temp = 0.1 * value;
+          log_data( &outsd[pos], value );
+          screen_update_reqd = 1;
+          ADD_TO_LOG( 3 );
+          break;
+        case ROOMS_TEMPERATURE:
+          rooms_temp = 0.1 * value;
+          log_data( &rooms[pos], value );
+          screen_update_reqd = 1;
+          ADD_TO_LOG( 4 );
+          break;
+        case WATER_TEMPERATURE:
+          water_temp = 0.1 * value;
+          log_data( &water[pos], value );
+          screen_update_reqd = 1;
+          ADD_TO_LOG( 5 );
+          break;
       }
     //- new data -> log!:
     if ( recent_set == 0x3F ) { // only when all params have been set
