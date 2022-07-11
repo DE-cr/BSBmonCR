@@ -15,14 +15,14 @@ This work is licensed under a
 ## How To Use
 
 Copy `config.h.default` to `config.h` and edit `config.h` according to your needs:
-WiFi credentials must be adjusted here; everything else is optional.
-(You may also have/want to adjust the BSB parameters and values to fit your
-heating system's configuration. Look for the `switch` statement in
-`BSBmonCR.ino` and also adapt `BSB-LAN/BSB_LAN_custom_global.h` accordingly.)
+WiFi credentials must be adjusted here;
+BSB parameters may also need adjusting;
+everything else is optional.
 Then compile `BSBmonCR.ino` and install it on your esp32 to be used as a monitor.
 
 Put the files from the `BSB-LAN` sub-directory into your BSB-LAN sketch directory
-and don't forget to put `#define CUSTOM_COMMANDS` into `BSB_LAN_config.h`,
+and don't forget to put `#define CUSTOM_COMMANDS` into `BSB_LAN_config.h`.
+Adjust `BSBmonCR_config.h` contents,
 then (re-) compile `BSB-LAN.ino` and install it on the unit attached to your BSB.
 (I've been using BSB-LAN version 2.1.3-20220209235153, btw.)
 
@@ -200,8 +200,6 @@ Wall mounted BSBmonCR system (I'm lacking the tools to fit the display *in* the 
 
 ### Coding
 
-* BSB-LAN parameters used are hard coded in multiple places
-  (`BSB-LAN/BSB_LAN_custom_global.h`, `BSBmonCR.ino`, `tools/BSBmonCR_log_viewer.html`). 
 * In most places, screen coordinates are hard coded for a 128*64 display,
   not calculated to fit a screen with possibly differing dimensions.
 * Error handling in some cases may not be considered "production ready".
