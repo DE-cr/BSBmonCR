@@ -1,17 +1,23 @@
 // Add custom code for setup function here which will be included at the end of the global section
 
 /*
- * BSB-LAN monitor
- * by user -cr at forum.fhem.de
- * using esp32 with ssd1306 display
- * inspired by https://forum.fhem.de/index.php/topic,110599.0.html
+ * BSB-LAN monitor (https://github.com/DE-cr/BSBmonCR)
+ * using esp32 with (optional) ssd1306 display
  * (file BSB_LAN_custom_global.h)
  */
 
 //- config:
 #define UDP_PORT 28000
-IPAddress broadcast_ip = IPAddress( 192, 168, 178, 255 );
-int udp_bsb_params[] = { 8700, 8770, 8830, 8001, 8003, 8005 };
+#include "BSBmonCR_config.h"
+IPAddress broadcast_ip = IPAddress( NETWORK, 255 );
+int udp_bsb_params[] = {
+  OUTSIDE_TEMPERATURE,
+  ROOMS_TEMPERATURE,
+  WATER_TEMPERATURE,
+  HEATING_STATUS,
+  WATER_STATUS,
+  BOILER_STATUS,
+};
 
 //- other:
 #define N_UDP_BSB_PARAMS ( sizeof( udp_bsb_params ) / sizeof( *udp_bsb_params ) )

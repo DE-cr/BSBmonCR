@@ -1,10 +1,8 @@
 // Add custom code for setup function here which will be included at the end of the function
 
 /*
- * BSB-LAN monitor
- * by user -cr at forum.fhem.de
- * using esp32 with ssd1306 display
- * inspired by https://forum.fhem.de/index.php/topic,110599.0.html
+ * BSB-LAN monitor (https://github.com/DE-cr/BSBmonCR)
+ * using esp32 with (optional) ssd1306 display
  * (file BSB_LAN_custom_setup.h)
  */
 
