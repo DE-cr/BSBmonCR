@@ -167,7 +167,7 @@ how to create these):
 
 ![Data Log View Example](images/BSBmonCR_log_view_example.png)
 
-Temperature values are in °C, status values as provided by
+Status values are given as provided by
 [BSB-LAN](https://github.com/fredlcore/bsb-lan).[^3]
 
 [^3]: For an explanation of the status values, use `http://bsb-lan/E8001` etc.
