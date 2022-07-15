@@ -85,7 +85,7 @@ t_log_data ipadr[ N_ADDR_TO_CHECK ][ DATA_SIZE ];
 int prev_pos = -1;
 
 WiFiUDP ntpUDP;
-NTPClient timeClient( ntpUDP, HOURS_OFFSET_TO_UTC*60*60, NTP_UPDATE_INTERVAL );
+NTPClient timeClient( ntpUDP, HOURS_OFFSET_TO_UTC*60*60);
 char time_now[6], time_prev[6];
 char date_now[11], date_prev[11];
 int recent[6], recent_set = 0;
@@ -405,6 +405,7 @@ void setup( ) {
   *date_prev = *time_prev = 0;
   *dropbox_access_token = 0;
   init_ota_update( );
+  timeClient.setUpdateInterval( NTP_UPDATE_INTERVAL );
   Serial.println( "setup() done." );
 }
 
