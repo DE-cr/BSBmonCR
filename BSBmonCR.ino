@@ -8,7 +8,7 @@
 
 #include "config.h"
 
-#define BSBmonCRversion "0.6.2"
+#define BSBmonCRversion "0.6.3"
 #define HELLO "-- Welcome to BSBmonCR v" BSBmonCRversion "! --"
 
 #define BIN_WIDTH_S ( 24*60*60 / DATA_SIZE ) // set to e.g. 60 for plot speedup in testing
@@ -24,6 +24,9 @@
 #define UPDATE_DROPBOX_TOKEN_AT ":15" // when hh:mm ends like this
 
 #define OTA_UPDATE_PORT 8080
+
+// library default of 60s violates pool.ntp.org terms of service!:
+#define NTP_UPDATE_INTERVAL ( 60L * 60 * 1000 ) // [ms]
 
 //-- libs:
 
@@ -82,7 +85,7 @@ t_log_data ipadr[ N_ADDR_TO_CHECK ][ DATA_SIZE ];
 int prev_pos = -1;
 
 WiFiUDP ntpUDP;
-NTPClient timeClient( ntpUDP, HOURS_OFFSET_TO_UTC*60*60 );
+NTPClient timeClient( ntpUDP, HOURS_OFFSET_TO_UTC*60*60, NTP_UPDATE_INTERVAL );
 char time_now[6], time_prev[6];
 char date_now[11], date_prev[11];
 int recent[6], recent_set = 0;
