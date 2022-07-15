@@ -212,9 +212,5 @@ Wall mounted BSBmonCR system (I'm lacking the tools to fit the display *in* the 
 
 * Presence indication via ping is not always reliable
   (e.g. some cell phones' power saving functions may interfere).
-* In some rare instances, `*.csv` files may contain garbage. I have yet to figure
-  out when that happens. (Multiple BSBmonCR instances running and trying
-  to write those files simultaneously? General problem with my Dropbox
-  read+write routine??) To remove ~~any~~most of the offending data,
-  you could use the following command on those files:
-  `perl -ni.bak -e'tr/:,0-9\n//cd; print if tr/,//==6 && /^\d\d:\d\d,/'`[^2]
+* The NTPClient library used is broken, but the workaround implemented
+  here seems to suffice.
