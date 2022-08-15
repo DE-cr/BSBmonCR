@@ -8,7 +8,7 @@
 
 #include "config.h"
 
-#define BSBmonCRversion "0.6.3"
+#define BSBmonCRversion "0.6.4"
 #define HELLO "-- Welcome to BSBmonCR v" BSBmonCRversion "! --"
 
 #define BIN_WIDTH_S ( 24*60*60 / DATA_SIZE ) // set to e.g. 60 for plot speedup in testing
@@ -384,6 +384,7 @@ void init_ota_update( ) {
 }
 
 void setup( ) {
+  setCpuFrequencyMhz( 80 );  // 240->80 MHz = approx. -20% power consumption
   Serial.begin( 115200 );
   Serial.println( HELLO );
   memset( udp_buf, 0, UDP_BUF_SIZE );
