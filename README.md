@@ -24,7 +24,7 @@ Put the files from the `BSB-LAN` sub-directory into your BSB-LAN sketch director
 and don't forget to put `#define CUSTOM_COMMANDS` into `BSB_LAN_config.h`.
 Adjust `BSBmonCR_config.h` contents,
 then (re-) compile `BSB-LAN.ino` and install it on the unit attached to your BSB.
-(I've been using BSB-LAN version 2.1.3-20220209235153, btw.)
+(I've been using BSB-LAN version ~~2.1.3-20220209235153~~ 2.1.8-20220731102301, btw.)
 
 If all goes well, you should see data from your BSB-LAN system displayed
 on the BSBmonCR unit.
