@@ -14,17 +14,35 @@ This work is licensed under a
 
 ## How To Use
 
-Copy `config.h.default` to `config.h` and edit `config.h` according to your needs:
-WiFi credentials must be adjusted here;
-BSB parameters may also need adjusting;
-everything else is optional.
-Then compile `BSBmonCR.ino` and install it on your esp32 to be used as a monitor.
+### Server (BSB_LAN)
+
+#### Variant 1: Without Custom Code
+
+Introduced with v0.7.0
+
+This requires [BSB-LAN](https://github.com/fredlcore/bsb-lan) source  code from 2022-08-20 or newer!
+
+Enable UDP logging in BSB-LAN's configuration (URL command `/C`),
+with a log interval of ten seconds (recommended; other values up to about 55s should
+also work without without loss of functionality) and the log parameters used
+in BSBmonCR's `config.h` (c.f. [below](#client-bsbmoncr)).
+
+#### Variant 2: With Custom Code
 
 Put the files from the `BSB-LAN` sub-directory into your BSB-LAN sketch directory
 and don't forget to put `#define CUSTOM_COMMANDS` into `BSB_LAN_config.h`.
 Adjust `BSBmonCR_config.h` contents,
 then (re-) compile `BSB-LAN.ino` and install it on the unit attached to your BSB.
 (I've been using BSB-LAN version ~~2.1.3-20220209235153~~ 2.1.8-20220731102301, btw.)
+
+### Client (BSBmonCR)
+
+Copy `config.h.default` to `config.h` and edit `config.h` according to your needs:
+- WiFi credentials must be adjusted here;
+- BSB parameters may also need adjusting;
+- for [server variant 2](#variant-2-with-custom-code) `#define UDP_PORT 28000`;
+- everything else is optional.
+Then compile `BSBmonCR.ino` and install it on your esp32 to be used as a monitor.
 
 If all goes well, you should see data from your BSB-LAN system displayed
 on the BSBmonCR unit.
