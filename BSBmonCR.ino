@@ -8,13 +8,12 @@
 
 #include "config.h"
 
-#define BSBmonCRversion "0.6.4"
+#define BSBmonCRversion "0.7.0"
 #define HELLO "-- Welcome to BSBmonCR v" BSBmonCRversion "! --"
 
 #define BIN_WIDTH_S ( 24*60*60 / DATA_SIZE ) // set to e.g. 60 for plot speedup in testing
 #define WIFI_CHECK_INTERVAL  7000 // [ms]
 #define ADDR_CHECK_INTERVAL 15000 // [ms]
-#define UDP_PORT 28000
 
 #define OLED_TYPE U8G2_SSD1306_128X64_NONAME_F_HW_I2C
 #define OLED_ROTATION U8G2_R0 // U8G2_R2 for 180°
@@ -46,7 +45,7 @@ unsigned long last_wifi_check_ms = 0;
 OLED_TYPE oled( OLED_ROTATION, U8X8_PIN_NONE );
 WiFiUDP udp;
 
-#define UDP_BUF_SIZE 20
+#define UDP_BUF_SIZE 99
 char udp_buf[ UDP_BUF_SIZE ];
 WiFiServer server( 80 );
 
@@ -383,6 +382,28 @@ void init_ota_update( ) {
   Serial.println( OTA_UPDATE_PORT );
 }
 
+void convert_bsblan_udp( char* udp_buf ) {
+  // sample data w/o custom code in BSB_LAN unit:
+  // 364593010;01.05.2022 00:00:15;8314;Kesselrücklauftemperatur Ist;66.7;°C
+  // function to convert this to custom format (here: "8314:667")
+  #define DELIM ";"
+  int param, value;
+  char *p = strtok( udp_buf, DELIM );  // millis
+  if ( p ) p = strtok( 0, DELIM );     // timestamp
+  if ( p ) p = strtok( 0, DELIM );     // param no.
+  if ( p ) {
+    param = atoi( p );
+    p = strtok( 0, DELIM );            // name
+  }
+  if ( p ) p = strtok( 0, DELIM );     // value
+  if ( p ) {
+    int n = strlen( p );
+    if ( n >= 2 && p[n-2] == '.' )
+      strcpy( p+n-2, p+n-1 );
+    sprintf( udp_buf, "%d:%s", param, p );
+  }
+}
+
 void setup( ) {
   setCpuFrequencyMhz( 80 );  // 240->80 MHz = approx. -20% power consumption
   Serial.begin( 115200 );
@@ -461,6 +482,7 @@ void loop( ) {
   if ( udp.parsePacket( ) ) {
     memset( udp_buf, 0, UDP_BUF_SIZE );
     udp.read( udp_buf, UDP_BUF_SIZE-1 );
+    convert_bsblan_udp( udp_buf );
     Serial.println( udp_buf );
     int param, value;
     if ( 2 == sscanf( udp_buf, "%d:%d", &param, &value ) )
