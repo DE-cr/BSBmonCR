@@ -14,7 +14,7 @@ This work is licensed under a
 
 ## How To Use
 
-### Server (BSB_LAN)
+### Server (BSB-LAN)
 
 #### Variant 1: Without Custom Code
 
