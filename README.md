@@ -24,7 +24,7 @@ This requires [BSB-LAN](https://github.com/fredlcore/bsb-lan) source  code from 
 
 Enable UDP logging in BSB-LAN's configuration (URL command `/C`),
 with a log interval of ten seconds (recommended; other values up to about 55s should
-also work without without loss of functionality) and the log parameters used
+also work without loss of functionality) and the log parameters used
 in BSBmonCR's `config.h` (c.f. [below](#client-bsbmoncr)).
 
 #### Variant 2: With Custom Code
