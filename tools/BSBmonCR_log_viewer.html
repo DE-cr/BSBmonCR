@@ -26,17 +26,26 @@
     <script src='https://d3js.org/d3.v4.min.js'></script>
     <script src='https://cdn.jsdelivr.net/npm/c3'></script>
     <script>
-      async function loadFile(file){
-        let text = await file.text();
+      async function loadFile( file ){
+        let text = await file.text( );
         let bn = file.name.replace( /^(.*\/)?(.+)(\..+)$/, '$2' );
         text = text.replace( /,/g, '\t' ) // CSV->TSV
-          // prepend date, if not given:
-          .replace( /^(..:..\t)/gm, bn + ' $1' )
+          .replace( /^(..:..\t)/gm, bn + ' $1' ); // prepend date, if not given
+        // find out if there's buffer values in the data:
+        let first_line = ( text.match( /.+/ ) )[0];
+        let n_fields = ( first_line.match( /[^\t]+/g ) ).length;
+        let with_buffer = n_fields == 8;
+        if ( with_buffer )
+          // last four values on each line /=10:
+          text = text.replace( /(\d\t\S+)(\d\t\S+)(\d\t\S+)(\d)$/gm,
+                               '.$1.$2.$3.$4' )
+        else
           // last three values on each line /=10:
-          .replace( /(\d\t\S+)(\d\t\S+)(\d)$/gm, '.$1.$2.$3' )
+          text = text.replace( /(\d\t\S+)(\d\t\S+)(\d)$/gm,
+                               '.$1.$2.$3' )
         // note: we reverse the original field order for the plot to
         // 1. show the more interesting fields first and
-        // 2. get more fitting colors for the plot lines
+        // 2. get better fitting colors for the plot lines
         let rows = [
           [ 'Date+Time',
             'Heating Status',
@@ -50,6 +59,12 @@
         text.split( '\n' ).forEach( function( line ) {
           rows.push( line.split( '\t' ).reverse( ) );
         } );
+        if ( with_buffer ) {
+          rows[0].unshift( 'Buffer Temperature [°C]' );
+          rows.forEach( function( row ) {
+            row.push( row.shift( ) ); // for better fitting colors
+          } );
+        }
         let f='%Y-%m-%d %H:%M';
         let c=c3.generate({
           bindto:'#c3',
