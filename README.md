@@ -103,6 +103,17 @@ to the command above: `wget -qO- BSBmonCR |` (i.e. if `BSBmonCR` is the
 name of your BSBmonCR system in your network; replace with the right
 name or IP address, if necessary).
 
+#### Buffer Temperature
+
+Introduced with v0.8.0
+
+With a heating buffer configured, its temperature values are
+included in [logging](#logging-to-a-dropbox-account) (if enabled),
+and a vertical line is placed to the left of the 24 hours plots.
+Its height shows the current buffer temperature relative to its
+minimal and maximal values within the most recent 24 hours (e.g.
+50 percent height = halfway between min and max).
+
 ### Screenshots via HTTP
 
 Introduced with v0.2.0
