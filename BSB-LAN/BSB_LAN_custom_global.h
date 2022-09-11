@@ -17,6 +17,9 @@ int udp_bsb_params[] = {
   HEATING_STATUS,
   WATER_STATUS,
   BOILER_STATUS,
+#ifdef BUFFER_TEMPERATURE
+  BUFFER_TEMPERATURE
+#endif
 };
 
 //- other:
