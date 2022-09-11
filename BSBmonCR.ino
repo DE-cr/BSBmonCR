@@ -8,7 +8,7 @@
 
 #include "config.h"
 
-#define BSBmonCRversion "0.7.0"
+#define BSBmonCRversion "0.8.0"
 #define HELLO "-- Welcome to BSBmonCR v" BSBmonCRversion "! --"
 
 #define BIN_WIDTH_S ( 24*60*60 / DATA_SIZE ) // set to e.g. 60 for plot speedup in testing
@@ -69,6 +69,7 @@ bool water_heating = 0;
 double outsd_temp = -12.3;
 double rooms_temp = 45.6;
 double water_temp = 78.9;
+int buffr_temp = 0;
 
 #define DATA_SIZE (24*3)  // 3 bins / h => bin width = 20 min
 typedef struct {
@@ -80,6 +81,7 @@ t_log_data outsd[ DATA_SIZE ];
 t_log_data rooms[ DATA_SIZE ];
 t_log_data water[ DATA_SIZE ];
 t_log_data heatg[ DATA_SIZE ];
+t_log_data buffr[ DATA_SIZE ];
 t_log_data ipadr[ N_ADDR_TO_CHECK ][ DATA_SIZE ];
 int prev_pos = -1;
 
@@ -87,8 +89,13 @@ WiFiUDP ntpUDP;
 NTPClient timeClient( ntpUDP, HOURS_OFFSET_TO_UTC*60*60);
 char time_now[6], time_prev[6];
 char date_now[11], date_prev[11];
-int recent[6], recent_set = 0;
-#define MAX_LINE_LEN ( 5 + 6*5 + 1 ) // e.g.: "00:00 -123 45 6 7 8 9\n"
+#ifdef BUFFER_TEMPERATURE
+#define N_RECENT 7
+#else
+#define N_RECENT 6
+#endif
+int recent[N_RECENT], recent_set = 0;
+#define MAX_LINE_LEN ( 5 + N_RECENT * 5 + 1 ) // e.g.: "00:00 -123 45 6 7 8 9\n"
 char recent_line[ MAX_LINE_LEN + 1 ];
 #define MAX_LOG_SIZE ( MAX_LINE_LEN * 24 * 60 + 1 )
 char complete_log[ MAX_LOG_SIZE ];
@@ -413,6 +420,7 @@ void setup( ) {
   memset( rooms, 0, DATA_SIZE * sizeof( t_log_data ) );
   memset( water, 0, DATA_SIZE * sizeof( t_log_data ) );
   memset( heatg, 0, DATA_SIZE * sizeof( t_log_data ) );
+  memset( buffr, 0, DATA_SIZE * sizeof( t_log_data ) );
   memset( ipadr, 0, N_ADDR_TO_CHECK * DATA_SIZE * sizeof( t_log_data ) );
   memset( addr_available, 0, N_ADDR_TO_CHECK * sizeof( *addr_available ) );
   oled.begin( );
@@ -456,6 +464,7 @@ void loop( ) {
     memset( &rooms[pos], 0, sizeof( t_log_data ) );
     memset( &water[pos], 0, sizeof( t_log_data ) );
     memset( &heatg[pos], 0, sizeof( t_log_data ) );
+    memset( &buffr[pos], 0, sizeof( t_log_data ) );
     for ( int i=0; i<N_ADDR_TO_CHECK; ++i )
       memset( &ipadr[i][pos], 0, sizeof( t_log_data ) );
     prev_pos = pos;
@@ -521,9 +530,19 @@ void loop( ) {
           screen_update_reqd = 1;
           ADD_TO_LOG( 5 );
           break;
+        #ifdef BUFFER_TEMPERATURE
+        case BUFFER_TEMPERATURE:
+          buffr_temp = value;
+          log_data( &buffr[pos], value );
+          screen_update_reqd = 1;
+          ADD_TO_LOG( 6 );
+          break;
+        #endif
       }
     //- new data -> log!:
-    if ( recent_set == 0x3F ) { // only when all params have been set
+    #define FULL_SET ( ( 1 << N_RECENT ) - 1 )
+    if ( recent_set == FULL_SET ) { // only when all params have been set
+      recent_set = 0;
       timeClient.update( );
       NTPClientFix( timeClient );
       sprintf( time_now, "%02d:%02d", timeClient.getHours( ), timeClient.getMinutes( ) );
@@ -550,8 +569,13 @@ void loop( ) {
           // any data to restore from dropbox?:
           readFromDropbox( DROPBOX_PATH, date_now, ".csv", (byte*)complete_log, log_size, MAX_LOG_SIZE, 0 );
         }
-        sprintf( recent_line, "%s,%d,%d,%d,%d,%d,%d\n",
-                 time_now,recent[0],recent[1],recent[2],recent[3],recent[4],recent[5] );
+        strcpy( recent_line, time_now );
+        for ( int i = 0;  i < N_RECENT;  ++i ) {
+          char x[9];
+          sprintf( x, ",%d", recent[i] );
+          strcat( recent_line, x );
+        }
+        strcat( recent_line, "\n" );
         Serial.print( recent_line );
         int n = strlen( recent_line );
         if ( log_size + n > MAX_LOG_SIZE )
@@ -592,6 +616,16 @@ void loop( ) {
         if ( ipadr[ addr ][ ( pos + DATA_SIZE - i ) % DATA_SIZE ].sum )
           oled.drawPixel( 127-i, 63-(N_ADDR_TO_CHECK-1)+addr );
     }
+    #ifdef BUFFER_TEMPERATURE
+    #define MAXY 63
+    int ymin = find_min( buffr );
+    int ymax = find_max( buffr );
+    if ( ymin != ymax ) { // otherwise we don't know how to scale
+      int x = 128 - DATA_SIZE;
+      int y = (long)( buffr_temp - ymin ) * MAXY / ( ymax - ymin );
+      oled.drawLine( x, MAXY, x, MAXY-y );
+    }
+    #endif
     #ifdef WITH_NERDY_TIMESTAMP_DISPLAY
     unsigned short yyyy;
     byte mm, dd;

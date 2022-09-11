@@ -15,10 +15,11 @@
 #define HEATING_STATUS      8001
 #define WATER_STATUS        8003
 #define BOILER_STATUS       8005
+#define BUFFER_TEMPERATURE  8980 // remove if no buffer in system
 // how to recognize BSB activity:
-#define ROOMS_HEATING ( 111 <= value && value <= 116 ) // value: HEATING_STATUS
-#define WATER_HEATING (  80 <= value && value <=  97 ) // value: WATER_STATUS
-#define BOILER_RUNNING ( value != 25 )                 // value: BOILER_STATUS
+#define ROOMS_HEATING ( 111 <= value && value <= 116 )              // value: HEATING_STATUS
+#define WATER_HEATING ( 80 <= value && value <= 97 || value == 17 ) // value: WATER_STATUS
+#define BOILER_RUNNING ( value != 25 )                              // value: BOILER_STATUS
 
 //- UDP port to listen for BSB_LAN messages (pick one of the following two lines):
 #define UDP_PORT 6502 // requires BSB_LAN source from 2022-08-20 or newer, with UPD logging configured
