@@ -5,6 +5,7 @@
  */
 
 // icon used from https://forum.fhem.de/index.php/topic,110599.0.html
+
 #define water_off_width 20
 #define water_off_height 20
 static unsigned char water_off_bits[] = {

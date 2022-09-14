@@ -4,6 +4,8 @@
  * (file water_semi_on.xbm.h)
  */
 
+// icon adapted from https://forum.fhem.de/index.php/topic,110599.0.html
+
 #define water_semi_on_width 20
 #define water_semi_on_height 20
 static unsigned char water_semi_on_bits[] = {

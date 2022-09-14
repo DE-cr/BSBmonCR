@@ -4,6 +4,8 @@
  * (file house_on.xbm.h)
  */
 
+// icon adapted from https://forum.fhem.de/index.php/topic,110599.0.html
+
 #define house_on_width 20
 #define house_on_height 20
 static unsigned char house_on_bits[] = {
