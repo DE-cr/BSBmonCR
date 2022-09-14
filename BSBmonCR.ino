@@ -51,8 +51,10 @@ WiFiServer server( 80 );
 
 #include "outside.xbm.h"
 #include "house_off.xbm.h"
+#include "house_semi_on.xbm.h"
 #include "house_on.xbm.h"
 #include "water_off.xbm.h"
+#include "water_semi_on.xbm.h"
 #include "water_on.xbm.h"
 #include "bmp_header.h"
 
@@ -64,6 +66,7 @@ bool addr_available[ N_ADDR_TO_CHECK ];
 int i_addr_to_check = 0;
 unsigned long last_addr_check_ms = 0;
 
+bool boiler_running = 0;
 bool rooms_heating = 0;
 bool water_heating = 0;
 double outsd_temp = -12.3;
@@ -508,7 +511,8 @@ void loop( ) {
           ADD_TO_LOG( 1 );
           break;
         case BOILER_STATUS:
-          log_data( &heatg[pos], BOILER_RUNNING ? 1 : 0 );
+          boiler_running = BOILER_RUNNING;
+          log_data( &heatg[pos], boiler_running ? 1 : 0 );
           screen_update_reqd = 1;
           ADD_TO_LOG( 2 );
           break;
@@ -596,9 +600,11 @@ void loop( ) {
     // symbols and current values on the left:
     draw_temp( outsd_temp,  0 + ICON_SHIFT, outside_bits );
     draw_temp( rooms_temp, 21 + ICON_SHIFT - PLOT_REDUCTION,
-               rooms_heating ? house_on_bits : house_off_bits );
+               rooms_heating ? ( boiler_running ? house_on_bits : house_semi_on_bits )
+                             : house_off_bits );
     draw_temp( water_temp, 42 + ICON_SHIFT - PLOT_REDUCTION * 2,
-               water_heating ? water_on_bits : water_off_bits );
+               water_heating ? ( boiler_running ? water_on_bits : water_semi_on_bits )
+                             : water_off_bits );
     // addr presence bars on lower left:
     #define len ( ( 128 - DATA_SIZE ) / ( N_ADDR_TO_CHECK ? N_ADDR_TO_CHECK : 1 ) )
     for ( int addr=0; addr<N_ADDR_TO_CHECK; ++addr )
