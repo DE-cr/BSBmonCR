@@ -56,7 +56,9 @@ on the BSBmonCR unit.
 Outside, room and water temperature (current value and preceding 24 h plot)
 are displayed. There's also a thin line below the temperature plots, showing
 when the boiler was active.
-The house/water symbol is filled when the house/water is being heated.
+The house/water symbol is filled when the house/water is being heated (half
+filled when the boiler is not running, e.g. because a buffer is used for
+the heating).
   
 Upon power-up, the monitor will display placeholder values for the
 temperatures, which should within seconds be replaced by values from your
