@@ -8,7 +8,7 @@
 
 #include "config.h"
 
-#define BSBmonCRversion "0.8.0"
+#define BSBmonCRversion "0.8.2"
 #define HELLO "-- Welcome to BSBmonCR v" BSBmonCRversion "! --"
 
 #define BIN_WIDTH_S ( 24*60*60 / DATA_SIZE ) // set to e.g. 60 for plot speedup in testing
@@ -20,7 +20,7 @@
 #define OLED_FONT u8g2_font_helvR12_te
 #define TEMP_FMT "%.1f"
 
-#define UPDATE_DROPBOX_TOKEN_AT ":15" // when hh:mm ends like this
+#define UPDATE_DROPBOX_TOKEN_AT ":42" // when hh:mm ends like this
 
 #define OTA_UPDATE_PORT 8080
 
