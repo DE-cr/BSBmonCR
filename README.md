@@ -189,7 +189,7 @@ BSBmonCR software onto your esp32 via USB.)
 
 ## Example Images
 
-Animated (and obviously sped up) display progress in basic configuration:
+Animated (and obviously sped up) display progress in full featured configuration:
 
 ![BSBmonCR](images/BSBmonCR.gif)
 
