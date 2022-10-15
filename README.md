@@ -214,10 +214,10 @@ for four cell phones configured (bottom four "pixel" lines),
 as well as [timestamp encoding](#nerdy-timestamp) enabled (light
 blue bit pattern[^4]).
 
-[^4]: `-----XXX XXX--XX-` = 2022, `----X--X` = 9, `----X--X` = 9,
-`--------` = 0, `--------` = 0, `-----X--` = 4 (with a line
+[^4]: `-----XXX XXX--XX-` = 2022, `----X-X-` = 10, `----XX-X` = 13,
+`--------` = 0, `--------` = 0, `----X--X` = 9 (with a line
 below to mark the LSB (least significant bit) of each byte
--> 2022-09-09T00:00:04 :)
+-> 2022-10-13T00:00:09 :)
 
 Naked esp32 fitted with ssd1306 display:
 
