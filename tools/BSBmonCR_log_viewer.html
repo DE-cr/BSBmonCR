@@ -37,11 +37,11 @@
         let with_buffer = n_fields == 8;
         if ( with_buffer )
           // last four values on each line /=10:
-          text = text.replace( /(\d\t\S+)(\d\t\S+)(\d\t\S+)(\d)$/gm,
+          text = text.replace( /(\d\t\S*)(\d\t\S*)(\d\t\S*)(\d)$/gm,
                                '.$1.$2.$3.$4' )
         else
           // last three values on each line /=10:
-          text = text.replace( /(\d\t\S+)(\d\t\S+)(\d)$/gm,
+          text = text.replace( /(\d\t\S*)(\d\t\S*)(\d)$/gm,
                                '.$1.$2.$3' )
         // note: we reverse the original field order for the plot to
         // 1. show the more interesting fields first and
