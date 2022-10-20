@@ -146,7 +146,7 @@ the CSV files will not contain a heading for the column names.
 
 To limit log data loss when restarting your BSBmonCR unit,
 existing `*.csv` files will be read and continued when switching
-to a new `yyyy-mm-dd`. Performing an OTA Update (c.f. below) will
+to a new `yyyy-mm-dd`. Performing an [OTA Update](#ota-update) will
 force `*.csv` writing immediately before the device's reset and reload
 the data from the file and continue it after the reset.
 
