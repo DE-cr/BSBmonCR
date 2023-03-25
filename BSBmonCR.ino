@@ -623,14 +623,22 @@ void loop( ) {
           oled.drawPixel( 127-i, 63-(N_ADDR_TO_CHECK-1)+addr );
     }
     #ifdef BUFFER_TEMPERATURE
-    #define MAXY 63
-    int ymin = find_min( buffr );
-    int ymax = find_max( buffr );
-    if ( ymin != ymax ) { // otherwise we don't know how to scale
-      int x = 128 - DATA_SIZE;
-      int y = (long)( buffr_temp - ymin ) * MAXY / ( ymax - ymin );
-      oled.drawLine( x, MAXY, x, MAXY-y );
-    }
+      #ifdef BUFFER_TEMP_OFFSET // absolute scale
+        int xb = 128 - DATA_SIZE;
+        int yb = buffr_temp/10 - BUFFER_TEMP_OFFSET + 0.5;
+        for ( int i=0; i<=yb; ++i )
+          if ( i%10!=9 || i==yb )
+            oled.drawPixel( xb, 63-i );
+      #else // relative scale
+        #define MAXY 63
+        int ymin = find_min( buffr );
+        int ymax = find_max( buffr );
+        if ( ymin != ymax ) { // otherwise we don't know how to scale
+          int x = 128 - DATA_SIZE;
+          int y = (long)( buffr_temp - ymin ) * MAXY / ( ymax - ymin );
+          oled.drawLine( x, MAXY, x, MAXY-y );
+        }
+      #endif
     #endif
     #ifdef WITH_NERDY_TIMESTAMP_DISPLAY
     unsigned short yyyy;

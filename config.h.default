@@ -15,7 +15,9 @@
 #define HEATING_STATUS      8001
 #define WATER_STATUS        8003
 #define BOILER_STATUS       8005
-#define BUFFER_TEMPERATURE  8980 // remove if no buffer in system
+#define BUFFER_TEMPERATURE  7831 // remove if no buffer in system
+// use the following for a fixed scale:
+//#define BUFFER_TEMP_OFFSET  10 // °C start value; choose as large as possible to have max-offset<=64
 // how to recognize BSB activity:
 #define ROOMS_HEATING  ( 111 <= value && value <= 116 || value == 17 ) // value: HEATING_STATUS
 #define WATER_HEATING  (  83 <= value && value <=  97 || value == 17 ) // value: WATER_STATUS
