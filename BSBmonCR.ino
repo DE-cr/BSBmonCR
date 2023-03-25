@@ -8,7 +8,7 @@
 
 #include "config.h"
 
-#define BSBmonCRversion "0.8.2"
+#define BSBmonCRversion "0.8.3"
 #define HELLO "-- Welcome to BSBmonCR v" BSBmonCRversion "! --"
 
 #define BIN_WIDTH_S ( 24*60*60 / DATA_SIZE ) // set to e.g. 60 for plot speedup in testing

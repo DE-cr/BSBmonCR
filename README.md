@@ -116,6 +116,11 @@ Its height shows the current buffer temperature relative to its
 minimal and maximal values within the most recent 24 hours (e.g.
 50 percent height = halfway between min and max).
 
+Introduced with v0.8.3
+
+As an alternative to the relative scaling described above, a fixed
+scale can also be selected for the buffer temperature in `config.h`.
+
 ### Screenshots via HTTP
 
 Introduced with v0.2.0
