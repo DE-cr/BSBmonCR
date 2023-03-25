@@ -157,7 +157,7 @@ BSBmonCR's `*.csv` files can be plotted using `BSBmonCR_log_viewer.html`
 which provides exact readings of a sample set's values (by hovering
 over the plot), zoom (mouse wheel / pinch) and scroll (drag)
 functionality as well as data line highlighting / disabling (hover
-over / click on line enty in legend).
+over / (alt-) click on line enty in legend).
 
 Should you wish to view multiple log files combined, create a compiled
 file by concatenating the original files, with each line prefixed with
