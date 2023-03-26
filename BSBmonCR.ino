@@ -625,7 +625,7 @@ void loop( ) {
     #ifdef BUFFER_TEMPERATURE
       #ifdef BUFFER_TEMP_OFFSET // absolute scale
         int xb = 128 - DATA_SIZE;
-        int yb = buffr_temp/10 - BUFFER_TEMP_OFFSET + 0.5;
+        int yb = buffr_temp/10.0 - BUFFER_TEMP_OFFSET - 0.5;
         for ( int i=0; i<=yb; ++i )
           if ( i%10!=9 || i==yb )
             oled.drawPixel( xb, 63-i );
