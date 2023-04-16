@@ -219,6 +219,11 @@ for four cell phones configured (bottom four "pixel" lines),
 as well as [timestamp encoding](#nerdy-timestamp) enabled (light
 blue bit pattern[^4]).
 
+Example with fixed scale for the (optional) [buffer temperature](#buffer-temperature)
+(10 °C to each full vertical bar, 62 °C here):
+
+![fixed buffer temp scale](images/BSBmonCR_fixed_buffer_scale.png)
+
 [^4]: `-----XXX XXX--XX-` = 2022, `----X-X-` = 10, `----XX-X` = 13,
 `--------` = 0, `--------` = 0, `----X--X` = 9 (with a line
 below to mark the LSB (least significant bit) of each byte
