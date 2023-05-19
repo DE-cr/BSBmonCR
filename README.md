@@ -126,8 +126,11 @@ scale can also be selected for the buffer temperature in `config.h`.
 Introduced with v0.9.0
 
 If you have a small solar energy system registered with nepviewer.com
-you can also have its most recent power report displayed by setting
+you can also have its most[^0] recent power report displayed by setting
 `PV_IDENT` in `config.h`.
+
+[^0]: It's actually _fairly_ recent, depending on `PV_UPDATE_INTERVAL`
+in `BSBmonCR.ino`.
 
 That value will then be displayed as a vertical line to the very left
 of the screen, scaled for 10 Watts per pixel, in bars of 10 pixels =
