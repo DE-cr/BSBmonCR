@@ -121,6 +121,19 @@ Introduced with v0.8.3
 As an alternative to the relative scaling described above, a fixed
 scale can also be selected for the buffer temperature in `config.h`.
 
+#### Solar Power Display
+
+Introduced with v0.9.0
+
+If you have a small solar energy system registered with nepviewer.com
+you can also have its most recent power report displayed by setting
+`PV_IDENT` in `config.h`.
+
+That value will then be displayed as a vertical line to the very left
+of the screen, scaled for 10 Watts per pixel, in bars of 10 pixels =
+100 Watts each. (If your solar system does more than 600 Watts, you
+may want to adjust the scaling in `BSBmonCR.ino`.)
+
 ### Screenshots via HTTP
 
 Introduced with v0.2.0
@@ -194,7 +207,8 @@ BSBmonCR software onto your esp32 via USB.)
 
 ## Example Images
 
-Animated (and obviously sped up) display progress in full featured configuration:
+Animated (and obviously sped up) display progress in full featured
+(minus [solar power display](#solar-power-display)) configuration:
 
 ![BSBmonCR](images/BSBmonCR.gif)
 
@@ -220,9 +234,10 @@ as well as [timestamp encoding](#nerdy-timestamp) enabled (light
 blue bit pattern[^4]).
 
 Example with fixed scale for the (optional) [buffer temperature](#buffer-temperature)
-(10 °C to each full vertical bar, 62 °C here):
+(10 °C to each full vertical bar, 62 °C here)
+and (also optional) [solar power display](#solar-power-display) (540 W here):
 
-![fixed buffer temp scale](images/BSBmonCR_fixed_buffer_scale.png)
+![fixed buffer temp scale and pv](images/BSBmonCR_fixed_buffer_scale_and_pv.png)
 
 [^4]: `-----XXX XXX--XX-` = 2022, `----X-X-` = 10, `----XX-X` = 13,
 `--------` = 0, `--------` = 0, `----X--X` = 9 (with a line

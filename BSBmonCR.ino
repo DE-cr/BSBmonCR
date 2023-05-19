@@ -8,12 +8,13 @@
 
 #include "config.h"
 
-#define BSBmonCRversion "0.8.3"
+#define BSBmonCRversion "0.9.0"
 #define HELLO "-- Welcome to BSBmonCR v" BSBmonCRversion "! --"
 
 #define BIN_WIDTH_S ( 24*60*60 / DATA_SIZE ) // set to e.g. 60 for plot speedup in testing
-#define WIFI_CHECK_INTERVAL  7000 // [ms]
-#define ADDR_CHECK_INTERVAL 15000 // [ms]
+#define WIFI_CHECK_INTERVAL  7000L // [ms]
+#define ADDR_CHECK_INTERVAL 15000L // [ms]
+#define PV_UPDATE_INTERVAL 300000L // [ms]
 
 #define OLED_TYPE U8G2_SSD1306_128X64_NONAME_F_HW_I2C
 #define OLED_ROTATION U8G2_R0 // U8G2_R2 for 180°
@@ -119,7 +120,33 @@ const char* update_server_index =
     "<input type='submit' value='Update'>"
   "</form>";
 
+int pv_watts = 0;
+
 //-- code:
+
+bool pv_update( unsigned long ms ) {
+#ifndef PV_IDENT
+  return false;
+#else
+  static unsigned long last_pv_check_ms = 0;
+  if ( ms - last_pv_check_ms < PV_UPDATE_INTERVAL // not yet time to update?
+       && ms > last_pv_check_ms ) // no overflow?
+    return false;
+  last_pv_check_ms = ms;
+  pv_watts = 0;
+  WiFiClient client;
+  #define PV_SERVER "user.nepviewer.com"
+  if ( !client.connect( PV_SERVER, 80 ) ) return true;
+  client.println( String( "GET /pv_monitor/home/index/" ) + PV_IDENT + " HTTP/1.1" );
+  client.println( String( "Host: " ) + PV_SERVER );
+  client.println( );
+  // Serial.println( client.readStringUntil( '\n' ) );
+  if ( !client.find( "round(" ) ) return true;  // e.g. "var now = Math.round(206);"
+  pv_watts = client.parseInt( );
+  Serial.println( String( "PV = " ) + pv_watts + " W" );
+  return true;
+#endif
+}
 
 int find_min( t_log_data* data ) {
   int min = 0;
@@ -157,8 +184,13 @@ void draw_temp( double val, int y_pos, unsigned char* xbm_bits ) {
   char str[ 9 ];
   sprintf( str, TEMP_FMT, val );
   if ( strlen( str ) > 4 ) str[3] = '\0';  // -10.0 (too wide) => -10
-  oled.drawXBMP( -1, y_pos, 20, 20, xbm_bits );
-  oled.setCursor( 20, y_pos + 16 );
+  #ifdef PV_IDENT
+    #define X_SHIFT 3
+  #else
+    #define X_SHIFT 0
+  #endif
+  oled.drawXBMP( -1 + X_SHIFT, y_pos, 20, 20, xbm_bits );
+  oled.setCursor(20 + X_SHIFT, y_pos + 16 );
   oled.print( str );
 }
 
@@ -455,7 +487,7 @@ void loop( ) {
     }
     last_wifi_check_ms = ms;  
   }
-  int screen_update_reqd = 0;
+  bool screen_update_reqd = pv_update( ms );
   //- which log data bin to use?:
   int pos = ms              // overflow after ca. 54 d ignored!
             / 1000          // => s
@@ -471,7 +503,7 @@ void loop( ) {
     for ( int i=0; i<N_ADDR_TO_CHECK; ++i )
       memset( &ipadr[i][pos], 0, sizeof( t_log_data ) );
     prev_pos = pos;
-    screen_update_reqd = 1;
+    screen_update_reqd = true;
   }
   //- check presence of IP addresses given:
   if ( N_ADDR_TO_CHECK &&  // feature enabled?
@@ -487,7 +519,7 @@ void loop( ) {
     addr_available[ i_addr_to_check ] = Ping.ping( addr_to_check[ i_addr_to_check ], 1 );
     Serial.println( addr_available[ i_addr_to_check ] );
     log_data( &ipadr[i_addr_to_check][pos], addr_available[i_addr_to_check] ? 1 : 0 );
-    screen_update_reqd = 1;
+    screen_update_reqd = true;
     ++ i_addr_to_check;
   }
   //- UDP packet received?:
@@ -502,43 +534,43 @@ void loop( ) {
         #define ADD_TO_LOG(i) { recent[i] = value;  recent_set |= 1 << i; } while ( 0 )
         case HEATING_STATUS:
           rooms_heating = ROOMS_HEATING;
-          screen_update_reqd = 1;
+          screen_update_reqd = true;
           ADD_TO_LOG( 0 );
           break;
         case WATER_STATUS:
           water_heating = WATER_HEATING;
-          screen_update_reqd = 1;
+          screen_update_reqd = true;
           ADD_TO_LOG( 1 );
           break;
         case BOILER_STATUS:
           boiler_running = BOILER_RUNNING;
           log_data( &heatg[pos], boiler_running ? 1 : 0 );
-          screen_update_reqd = 1;
+          screen_update_reqd = true;
           ADD_TO_LOG( 2 );
           break;
         case OUTSIDE_TEMPERATURE:
           outsd_temp = 0.1 * value;
           log_data( &outsd[pos], value );
-          screen_update_reqd = 1;
+          screen_update_reqd = true;
           ADD_TO_LOG( 3 );
           break;
         case ROOMS_TEMPERATURE:
           rooms_temp = 0.1 * value;
           log_data( &rooms[pos], value );
-          screen_update_reqd = 1;
+          screen_update_reqd = true;
           ADD_TO_LOG( 4 );
           break;
         case WATER_TEMPERATURE:
           water_temp = 0.1 * value;
           log_data( &water[pos], value );
-          screen_update_reqd = 1;
+          screen_update_reqd = true;
           ADD_TO_LOG( 5 );
           break;
         #ifdef BUFFER_TEMPERATURE
         case BUFFER_TEMPERATURE:
           buffr_temp = value;
           log_data( &buffr[pos], value );
-          screen_update_reqd = 1;
+          screen_update_reqd = true;
           ADD_TO_LOG( 6 );
           break;
         #endif
@@ -639,6 +671,13 @@ void loop( ) {
           oled.drawLine( x, MAXY, x, MAXY-y );
         }
       #endif
+    #endif
+    #ifdef PV_IDENT
+      int xp = 0;//128 - DATA_SIZE - 2;
+      int yp = (pv_watts+5)/10 - 1;
+      for ( int i=0; i<=yp; ++i )
+        if ( i%10!=9 || i==yp )
+          oled.drawPixel( xp, i );
     #endif
     #ifdef WITH_NERDY_TIMESTAMP_DISPLAY
     unsigned short yyyy;
