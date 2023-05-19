@@ -8,7 +8,7 @@
 
 #include "config.h"
 
-#define BSBmonCRversion "0.9.0"
+#define BSBmonCRversion "0.9.1"
 #define HELLO "-- Welcome to BSBmonCR v" BSBmonCRversion "! --"
 
 #define BIN_WIDTH_S ( 24*60*60 / DATA_SIZE ) // set to e.g. 60 for plot speedup in testing
@@ -133,15 +133,14 @@ bool pv_update( unsigned long ms ) {
        && ms > last_pv_check_ms ) // no overflow?
     return false;
   last_pv_check_ms = ms;
-  pv_watts = 0;
   WiFiClient client;
   #define PV_SERVER "user.nepviewer.com"
-  if ( !client.connect( PV_SERVER, 80 ) ) return true;
+  if ( !client.connect( PV_SERVER, 80 ) ) return false;
   client.println( String( "GET /pv_monitor/home/index/" ) + PV_IDENT + " HTTP/1.1" );
   client.println( String( "Host: " ) + PV_SERVER );
   client.println( );
   // Serial.println( client.readStringUntil( '\n' ) );
-  if ( !client.find( "round(" ) ) return true;  // e.g. "var now = Math.round(206);"
+  if ( !client.find( "round(" ) ) return false;  // e.g. "var now = Math.round(206);"
   pv_watts = client.parseInt( );
   Serial.println( String( "PV = " ) + pv_watts + " W" );
   return true;
