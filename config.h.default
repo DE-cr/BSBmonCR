@@ -54,3 +54,6 @@
 //- define the following if you have a small solar system registered with nepviewer.com:
 // (you'll find your ident in the URLs nepviewer.com guides you to after login)
 //#define PV_IDENT "cc_yyyymmdd_code"
+// time when there could be solar energy (otherwise there's no need to get values from the cloud):
+#define PV_BEGIN "06:00"
+#define PV_END   "22:00"

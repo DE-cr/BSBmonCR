@@ -8,7 +8,7 @@
 
 #include "config.h"
 
-#define BSBmonCRversion "0.9.1"
+#define BSBmonCRversion "0.9.2"
 #define HELLO "-- Welcome to BSBmonCR v" BSBmonCRversion "! --"
 
 #define BIN_WIDTH_S ( 24*60*60 / DATA_SIZE ) // set to e.g. 60 for plot speedup in testing
@@ -133,6 +133,8 @@ bool pv_update( unsigned long ms ) {
        && ms > last_pv_check_ms ) // no overflow?
     return false;
   last_pv_check_ms = ms;
+  if ( strcmp( time_now, PV_BEGIN ) < 0 || strcmp( time_now, PV_END ) > 0 )
+    return false;
   WiFiClient client;
   #define PV_SERVER "user.nepviewer.com"
   if ( !client.connect( PV_SERVER, 80 ) ) return false;
