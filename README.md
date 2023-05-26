@@ -249,7 +249,7 @@ Enlarged and color coded (for explanation) example with fixed scale for the (opt
 (blue, 10 °C to each full vertical bar, 49 °C here)
 and (also optional) [solar power display](#solar-power-display)
 (most recent power reading in red, 100 W to each full vertical bar, 520 W here,
-and current day's energy total in green, 1 kWh to each full horizontal bar, 2.4 kWh here).
+and current day's energy total in green, 1 kWh to each full horizontal bar, 2.4 kWh here):
 
 ![fixed buffer temp scale and pv](images/BSBmonCR_fixed_buffer_scale_and_pv.png)
 
