@@ -8,7 +8,7 @@
 
 #include "config.h"
 
-#define BSBmonCRversion "0.9.2"
+#define BSBmonCRversion "0.9.4"
 #define HELLO "-- Welcome to BSBmonCR v" BSBmonCRversion "! --"
 
 #define BIN_WIDTH_S ( 24*60*60 / DATA_SIZE ) // set to e.g. 60 for plot speedup in testing
@@ -121,6 +121,7 @@ const char* update_server_index =
   "</form>";
 
 int pv_watts = 0;
+double pv_kwh = 0;
 
 //-- code:
 
@@ -144,7 +145,8 @@ bool pv_update( unsigned long ms ) {
   // Serial.println( client.readStringUntil( '\n' ) );
   if ( !client.find( "round(" ) ) return false;  // e.g. "var now = Math.round(206);"
   pv_watts = client.parseInt( );
-  Serial.println( String( "PV = " ) + pv_watts + " W" );
+  if ( client.find( "Today:" ) ) pv_kwh = client.parseFloat( );
+  Serial.println( String( "PV = " ) + pv_watts + " W / " + pv_kwh + " kWh" );
   return true;
 #endif
 }
@@ -185,13 +187,15 @@ void draw_temp( double val, int y_pos, unsigned char* xbm_bits ) {
   char str[ 9 ];
   sprintf( str, TEMP_FMT, val );
   if ( strlen( str ) > 4 ) str[3] = '\0';  // -10.0 (too wide) => -10
+  static int y_shift = 0;
   #ifdef PV_IDENT
+    if ( --y_shift < 0 ) y_shift = 2;
     #define X_SHIFT 3
   #else
     #define X_SHIFT 0
   #endif
-  oled.drawXBMP( -1 + X_SHIFT, y_pos, 20, 20, xbm_bits );
-  oled.setCursor(20 + X_SHIFT, y_pos + 16 );
+  oled.drawXBMP( -1 + X_SHIFT, y_pos + y_shift +  1, 18, 18, xbm_bits );
+  oled.setCursor(20 + X_SHIFT, y_pos + y_shift + 16 );
   oled.print( str );
 }
 
@@ -674,11 +678,16 @@ void loop( ) {
       #endif
     #endif
     #ifdef PV_IDENT
-      int xp = 0;//128 - DATA_SIZE - 2;
-      int yp = (pv_watts+5)/10 - 1;
-      for ( int i=0; i<=yp; ++i )
-        if ( i%10!=9 || i==yp )
-          oled.drawPixel( xp, i );
+    // current power, vertical from top left, 10 Watts per pixel:
+    int yp = (pv_watts+5)/10 - 1;
+    for ( int i=0; i<=yp; ++i )
+      if ( i%10!=9 || i==yp )
+        oled.drawPixel( 0, i );
+    // current day's energy generation, top line horizontal, 10 pixels per kWh:
+    int xp = (pv_kwh*10) - 1;
+    for ( int i=0; i<=xp; ++i )
+      if ( i%10!=9 || i==xp )
+        oled.drawPixel( 128-DATA_SIZE-1-i, 0 );
     #endif
     #ifdef WITH_NERDY_TIMESTAMP_DISPLAY
     unsigned short yyyy;

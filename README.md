@@ -133,9 +133,17 @@ you can also have its most[^0] recent power report displayed by setting
 in `BSBmonCR.ino`.
 
 That value will then be displayed as a vertical line to the very left
-of the screen, scaled for 10 Watts per pixel, in bars of 10 pixels =
-100 Watts each. (If your solar system does more than 600 Watts, you
-may want to adjust the scaling in `BSBmonCR.ino`.)
+of the screen, scaled for 10 Watts per pixel, in bars of 10 pixels, i.e.
+100 Watts for each full bar. (If your solar system does more than 600
+Watts, you may want to adjust the scaling in `BSBmonCR.ino`.)
+
+Introduced with v0.9.3
+
+Additionally, the current day's energy generation will be
+displayed as a horizontal bar in the top line, scaled for 100 Wh
+per pixel, in bars of 10 pixels, i.e. 1 kWh for each full bar.
+(Again, depending on your solar system's capacity, you may want to
+adjust the scaling in `BSBmonCR.ino`.)
 
 ### Screenshots via HTTP
 
@@ -236,9 +244,12 @@ for four cell phones configured (bottom four "pixel" lines),
 as well as [timestamp encoding](#nerdy-timestamp) enabled (light
 blue bit pattern[^4]).
 
-Example with fixed scale for the (optional) [buffer temperature](#buffer-temperature)
-(10 °C to each full vertical bar, 62 °C here)
-and (also optional) [solar power display](#solar-power-display) (540 W here):
+Enlarged and color coded (for explanation) example with fixed scale for the (optional)
+[buffer temperature](#buffer-temperature)
+(blue, 10 °C to each full vertical bar, 49 °C here)
+and (also optional) [solar power display](#solar-power-display)
+(most recent power reading in red, 100 W to each full vertical bar, 520 W here,
+and current day's energy total in green, 1 kWh to each full horizontal bar, 2.4 kWh here).
 
 ![fixed buffer temp scale and pv](images/BSBmonCR_fixed_buffer_scale_and_pv.png)
 
