@@ -194,7 +194,7 @@ void draw_temp( double val, int y_pos, unsigned char* xbm_bits ) {
   #else
     #define X_SHIFT 0
   #endif
-  oled.drawXBMP( -1 + X_SHIFT, y_pos + y_shift +  1, 18, 18, xbm_bits );
+  oled.drawXBMP(  0 + X_SHIFT, y_pos + y_shift +  1, 18, 18, xbm_bits );
   oled.setCursor(20 + X_SHIFT, y_pos + y_shift + 16 );
   oled.print( str );
 }
