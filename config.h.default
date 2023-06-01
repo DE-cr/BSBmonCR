@@ -27,9 +27,10 @@
 #define UDP_PORT 6502 // requires BSB_LAN source from 2022-08-20 or newer, with UPD logging configured
 //#define UDP_PORT 28000 // requires BSB_LAN customization (c.f. README.md)
 
-//- timezone info:
-#define HOURS_OFFSET_TO_UTC 0  // 0=UTC/GMT, 1=CET, -5=EST, ...
-// offset switching due to daylight savings time not yet (?) implemented!
+//- timezone info (keep the variable names used here!)
+// see https://github.com/JChristensen/Timezone for info on what values to provide within the {}:
+TimeChangeRule DST = {"CEST", Last, Sun, Mar, 2, 120};     // Central European Summer Time
+TimeChangeRule STT = {"CET ", Last, Sun, Oct, 3,  60};     // Central European Standard Time
 
 //- names of computers to periodically check their network presence:
 #define ADDR_TO_CHECK // e.g.: "Smartphone1", "Smartphone2", "Notebook"

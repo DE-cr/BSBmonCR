@@ -4,11 +4,13 @@
  * (file BSBmonCR.ino)
  */
 
+#include <Timezone.h>
+
 //-- config:
 
 #include "config.h"
 
-#define BSBmonCRversion "0.9.4"
+#define BSBmonCRversion "0.9.5"
 #define HELLO "-- Welcome to BSBmonCR v" BSBmonCRversion "! --"
 
 #define BIN_WIDTH_S ( 24*60*60 / DATA_SIZE ) // set to e.g. 60 for plot speedup in testing
@@ -40,6 +42,8 @@
 #include <Update.h>
 
 //-- vars:
+
+Timezone tz(DST,STT);
 
 unsigned long last_wifi_check_ms = 0;
 
@@ -90,7 +94,7 @@ t_log_data ipadr[ N_ADDR_TO_CHECK ][ DATA_SIZE ];
 int prev_pos = -1;
 
 WiFiUDP ntpUDP;
-NTPClient timeClient( ntpUDP, HOURS_OFFSET_TO_UTC*60*60);
+NTPClient timeClient( ntpUDP );  // offset to UTC handled with Timezone library functions, to include daylight savings time
 char time_now[6], time_prev[6];
 char date_now[11], date_prev[11];
 #ifdef BUFFER_TEMPERATURE
@@ -451,6 +455,16 @@ void convert_bsblan_udp( char* udp_buf ) {
   }
 }
 
+void update_time( ) {
+  timeClient.update( );
+  NTPClientFix( timeClient );
+  time_t t = tz.toLocal( timeClient.getEpochTime( ) );
+  int hm = t % ( 24 * 60 * 60 );  // drop date -> h:m:s
+  hm /= 60;  // drop seconds
+  sprintf( time_now, "%02d:%02d", hm / 60, hm % 60 );
+  epoch2date( t, date_now );
+}
+
 void setup( ) {
   setCpuFrequencyMhz( 80 );  // 240->80 MHz = approx. -20% power consumption
   Serial.begin( 115200 );
@@ -584,15 +598,12 @@ void loop( ) {
     #define FULL_SET ( ( 1 << N_RECENT ) - 1 )
     if ( recent_set == FULL_SET ) { // only when all params have been set
       recent_set = 0;
-      timeClient.update( );
-      NTPClientFix( timeClient );
-      sprintf( time_now, "%02d:%02d", timeClient.getHours( ), timeClient.getMinutes( ) );
+      update_time( );
       if ( strcmp( time_now, time_prev ) ) { // new hh:mm
         if ( !access_token_ok ||
              !strcmp( time_now + 5 - strlen( UPDATE_DROPBOX_TOKEN_AT ), UPDATE_DROPBOX_TOKEN_AT ) )
           // Dropbox access tokens usually expire after 4h, but this is easier for us to handle
           access_token_ok = updateDropboxToken( );
-        epoch2date( timeClient.getEpochTime( ), date_now );
         bool new_day = strcmp( date_now, date_prev );
         if ( log_size ) {
           if ( ! strcmp( time_now + 5 - strlen( DROPBOX_BMP_WRITE_TIME_PATTERN ),
