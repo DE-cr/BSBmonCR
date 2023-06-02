@@ -94,7 +94,7 @@ int prev_pos = -1;
 
 WiFiUDP ntpUDP;
 NTPClient timeClient( ntpUDP );  // offset to UTC handled with Timezone library functions, to include daylight savings time
-char time_now[6], time_prev[6];
+char time_now[8], time_prev[8];
 char date_now[11], date_prev[11];
 #ifdef BUFFER_TEMPERATURE
 #define N_RECENT 7
@@ -127,7 +127,7 @@ int pv_watts = 0;
 double pv_kwh = 0;
 
 Timezone tz(DST,STT);
-char sunrise[6], sunset[6];  // hh:mm
+char sunrise[8], sunset[8];  // hh:mm
 
 //-- code:
 
@@ -295,7 +295,8 @@ bool updateDropboxToken( ) {
       if ( client.readStringUntil( '\n' ) == "\r" )
         break;
     String line = client.readStringUntil( '\n' );
-    if ( success = line.startsWith( TOKEN_INTRO ) ) {
+    success = line.startsWith( TOKEN_INTRO );
+    if ( success ) {
       const char* p_line = line.c_str( ) + strlen( TOKEN_INTRO );
       char* p_token = dropbox_access_token;
       for ( int n = 0;  *p_line && *p_line != '"' && n < MAX_TOKEN_LENGTH;  ++n )
@@ -440,7 +441,7 @@ void convert_bsblan_udp( char* udp_buf ) {
   // 364593010;01.05.2022 00:00:15;8314;Kesselrücklauftemperatur Ist;66.7;°C
   // function to convert this to custom format (here: "8314:667")
   #define DELIM ";"
-  int param, value;
+  int param;
   char *p = strtok( udp_buf, DELIM );  // millis
   if ( p ) p = strtok( 0, DELIM );     // timestamp
   if ( p ) p = strtok( 0, DELIM );     // param no.
@@ -720,22 +721,24 @@ void loop( ) {
         oled.drawPixel( 128-DATA_SIZE-1-i, 0 );
     #endif
     #ifdef WITH_NERDY_TIMESTAMP_DISPLAY
-    unsigned short yyyy;
-    byte mm, dd;
-    char date[11];
-    sscanf( epoch2date( timeClient.getEpochTime(), date ), "%d-%d-%d", &yyyy, &mm, &dd );
+    int y_, m_, d_;
+    sscanf( date_now, "%d-%d-%d", &y_, &m_, &d_ );
+    unsigned short yyyy = y_;
+    byte mm=m_, dd=d_;
     unsigned long bits = yyyy<<16ul | mm<<8ul | dd;
     int y = 63 - PLOT_REDUCTION * 3;
     for ( int x=0;  x < 32;  ++x )
       if ( bits & 1ul << ( 31 - x ) )
         oled.drawPixel( x, y );
-    byte HH=timeClient.getHours(), MM=timeClient.getMinutes(), SS=timeClient.getSeconds();
+    int h_;
+    sscanf( time_now, "%d:%d", &h_, &m_ );
+    byte HH=h_, MM=m_, SS=timeClient.getSeconds();
     bits = HH<<16ul | MM<<8ul | SS;
     for ( int x=0;  x < 24;  ++x )
       if ( bits & 1ul << ( 23 - x ) )
         oled.drawPixel( x + 32, y );
     #ifdef LSB_MARKERS_FOR_NERDY_TIMESTAMP
-    y = y==63 ? --y : ++y;  // below timestamp, if possible, otherwise above
+    y = y==63 ? y-1 : y+1;  // below timestamp, if possible, otherwise above
     for ( int i=0;  i<7;  ++i )
       oled.drawPixel( 8*i+7, y );
     #endif

@@ -19,9 +19,9 @@
 // use the following °C start value for a fixed scale:
 //#define BUFFER_TEMP_OFFSET  0 // choose as large as possible to have max-offset<=64 (or accept cut-off)
 // how to recognize BSB activity:
-#define ROOMS_HEATING  ( 111 <= value && value <= 116 || value == 17 ) // value: HEATING_STATUS
-#define WATER_HEATING  (  83 <= value && value <=  97 || value == 17 ) // value: WATER_STATUS
-#define BOILER_RUNNING (  13 <= value && value <=  16 )                // value: BOILER_STATUS
+#define ROOMS_HEATING  ( ( 111 <= value && value <= 116 ) || value == 17 ) // value: HEATING_STATUS
+#define WATER_HEATING  ( (  83 <= value && value <=  97 ) || value == 17 ) // value: WATER_STATUS
+#define BOILER_RUNNING (    13 <= value && value <=  16 )                  // value: BOILER_STATUS
 
 //- UDP port to listen for BSB_LAN messages (pick one of the following two lines):
 #define UDP_PORT 6502 // requires BSB_LAN source from 2022-08-20 or newer, with UPD logging configured
