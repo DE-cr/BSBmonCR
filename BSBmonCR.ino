@@ -10,7 +10,7 @@
 
 #include "config.h"
 
-#define BSBmonCRversion "0.9.5"
+#define BSBmonCRversion "0.9.6"
 #define HELLO "-- Welcome to BSBmonCR v" BSBmonCRversion "! --"
 
 #define BIN_WIDTH_S ( 24*60*60 / DATA_SIZE ) // set to e.g. 60 for plot speedup in testing
@@ -40,10 +40,9 @@
 #include "NTPClientFix.h"
 #include <WebServer.h>
 #include <Update.h>
+#include <sunset.h>
 
 //-- vars:
-
-Timezone tz(DST,STT);
 
 unsigned long last_wifi_check_ms = 0;
 
@@ -127,6 +126,9 @@ const char* update_server_index =
 int pv_watts = 0;
 double pv_kwh = 0;
 
+Timezone tz(DST,STT);
+char sunrise[6], sunset[6];  // hh:mm
+
 //-- code:
 
 bool pv_update( unsigned long ms ) {
@@ -138,7 +140,7 @@ bool pv_update( unsigned long ms ) {
        && ms > last_pv_check_ms ) // no overflow?
     return false;
   last_pv_check_ms = ms;
-  if ( strcmp( time_now, PV_BEGIN ) < 0 || strcmp( time_now, PV_END ) > 0 )
+  if ( strcmp( time_now, sunrise ) < 0 || strcmp( time_now, sunset ) > 0 )
     return false;
   WiFiClient client;
   #define PV_SERVER "user.nepviewer.com"
@@ -458,11 +460,27 @@ void convert_bsblan_udp( char* udp_buf ) {
 void update_time( ) {
   timeClient.update( );
   NTPClientFix( timeClient );
-  time_t t = tz.toLocal( timeClient.getEpochTime( ) );
+  time_t t_orig = timeClient.getEpochTime( );
+  time_t t = tz.toLocal( t_orig );
   int hm = t % ( 24 * 60 * 60 );  // drop date -> h:m:s
   hm /= 60;  // drop seconds
   sprintf( time_now, "%02d:%02d", hm / 60, hm % 60 );
   epoch2date( t, date_now );
+  #ifdef PV_IDENT
+  if ( !strcmp( date_now, date_prev ) ) return;  // no need for expensive sunrise/sunset calculation
+  int hours_from_utc = ( t - t_orig ) / ( 60 * 60 );
+  int y, m, d;
+  sscanf( date_now, "%d-%d-%d", &y, &m, &d );
+  SunSet location;
+  location.setCurrentDate( y, m, d );
+  location.setPosition( LATITUDE, LONGITUDE, hours_from_utc );
+  double sun_up = location.calcSunrise( );
+  if ( sun_up   != sun_up   ) strcpy( sunrise, "00:00" );  // NaN?
+  else sprintf( sunrise, "%02d:%02d", (int)(sun_up  /60), ((int)sun_up  )%60 );
+  double sun_down = location.calcSunset( );
+  if ( sun_down != sun_down ) strcpy( sunset , "23:59" );  // NaN?
+  else sprintf( sunset , "%02d:%02d", (int)(sun_down/60), ((int)sun_down)%60 );
+  #endif
 }
 
 void setup( ) {
@@ -488,6 +506,7 @@ void setup( ) {
   timeClient.begin( );
   *date_prev = *time_prev = 0;
   *dropbox_access_token = 0;
+  *sunset = *sunrise = 0;
   init_ota_update( );
   timeClient.setUpdateInterval( NTP_UPDATE_INTERVAL );
   Serial.println( "setup() done." );
@@ -615,7 +634,7 @@ void loop( ) {
             send2dropbox( DROPBOX_PATH, date_prev, ".csv", (byte*)complete_log, log_size, new_day ? 2 : 0 );
         } // log_size
         if ( new_day ) {
-          Serial.println( date_now );
+          Serial.println( String( date_now ) + " (" + sunrise + '-' + sunset + ')' );
           log_size = *complete_log = 0; // clear log for new day (even if the last send2dropbox failed!)
           strcpy( date_prev, date_now );
           // any data to restore from dropbox?:
