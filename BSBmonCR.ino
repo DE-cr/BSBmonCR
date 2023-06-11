@@ -715,7 +715,7 @@ void loop( ) {
       if ( i%10!=9 || i==yp )
         oled.drawPixel( 0, i );
     // current day's energy generation, top line horizontal, 10 pixels per kWh:
-    int xp = (pv_kwh*10) - 1;
+    int xp = (int)(pv_kwh*10+0.5) - 1;
     for ( int i=0; i<=xp; ++i )
       if ( i%10!=9 || i==xp )
         oled.drawPixel( 128-DATA_SIZE-1-i, 0 );
