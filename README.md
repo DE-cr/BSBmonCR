@@ -284,3 +284,5 @@ Wall mounted BSBmonCR system (I'm lacking the tools to fit the display *in* the 
   (e.g. some cell phones' power saving functions may interfere).
 * The NTPClient library used is broken, but the workaround implemented
   here seems to suffice.
+* Nepviewer.com sometimes delivers zero values instead of the actual ones
+  for the solar power.
