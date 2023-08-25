@@ -10,7 +10,7 @@
 
 #include "config.h"
 
-#define BSBmonCRversion "0.9.6"
+#define BSBmonCRversion "0.9.7"
 #define HELLO "-- Welcome to BSBmonCR v" BSBmonCRversion "! --"
 
 #define BIN_WIDTH_S ( 24*60*60 / DATA_SIZE ) // set to e.g. 60 for plot speedup in testing
@@ -150,9 +150,13 @@ bool pv_update( unsigned long ms ) {
   client.println( );
   // Serial.println( client.readStringUntil( '\n' ) );
   if ( !client.find( "round(" ) ) return false;  // e.g. "var now = Math.round(206);"
-  pv_watts = client.parseInt( );
-  if ( client.find( "Today:" ) ) pv_kwh = client.parseFloat( );
+  int tmp_pv_watts = client.parseInt( );
+  if ( !client.find( "Today:" ) ) return false;
+  double tmp_pv_kwh = client.parseFloat( );
   Serial.println( String( "PV = " ) + pv_watts + " W / " + pv_kwh + " kWh" );
+  if ( tmp_pv_watts == 0 && (int)tmp_pv_kwh == 0 ) return false;
+  pv_watts = tmp_pv_watts;
+  pv_kwh = tmp_pv_kwh;
   return true;
 #endif
 }
