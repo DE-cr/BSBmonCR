@@ -33,7 +33,7 @@ Put the files from the `BSB-LAN` sub-directory into your BSB-LAN sketch director
 and don't forget to put `#define CUSTOM_COMMANDS` into `BSB_LAN_config.h`.
 Adjust `BSBmonCR_config.h` contents,
 then (re-) compile `BSB-LAN.ino` and install it on the unit attached to your BSB.
-(I've been using BSB-LAN version ~~2.1.3-20220209235153~~ 2.1.8-20220731102301, btw.)
+(I've been using BSB-LAN versions since 2.1.3-20220209235153 with BSBmonCR, btw.)
 
 ### Client (BSBmonCR)
 
@@ -216,6 +216,23 @@ in the Arduino IDE. (Of course this works only with an esp32 already
 running OTA enabled software, i.e. the first time you have to load the
 BSBmonCR software onto your esp32 via USB.)
 
+### Limiting Boiler Runs For DHW
+
+Introduced with v0.10.0
+
+Requires a [buffer](#buffer-temperature) in your heating system!
+
+If you want to limit boiler starts for DHW to once a day, you can set
+`LIMIT_BOILER_RUNS_FOR_WATER` in `config.h` and adjust the values following
+that `#define` to match your heating system's settings.
+
+Instead of another boiler run for DHW, the water will only be heated as far
+as the buffer allows, then DHW will be disabled for the day (or until
+heating water from the buffer would be feasible again).
+
+If required, a manual DHW push will always be possible, though.
+When the boiler is running to heat the house anyway, DHW heating will also be done.
+
 ## Example Images
 
 Animated (and obviously sped up) display progress in full featured
@@ -280,7 +297,11 @@ Wall mounted BSBmonCR system (I'm lacking the tools to fit the display *in* the 
 
 ### Known Issues
 
-* Presence indication via ping is not always reliable
+* [Presence indication](#presence-indicator) via ping is not always reliable
   (e.g. some cell phones' power saving functions may interfere).
 * The NTPClient library used is broken, but the workaround implemented
   here seems to suffice.
+* Depending on your [solar power](#solar-power-display) system's connectivity, nepviewer.com may not always have recent values that can be displayed.
+* When the [buffer temperature](#buffer-temperature) drops really fast,
+  [limiting boiler runs for DHW](#limiting-boiler-runs-for-dhw) may not
+  react quickly enough to avoid boiler startup.

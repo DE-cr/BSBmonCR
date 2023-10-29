@@ -10,7 +10,7 @@
 
 #include "config.h"
 
-#define BSBmonCRversion "0.9.6"
+#define BSBmonCRversion "0.10.3"
 #define HELLO "-- Welcome to BSBmonCR v" BSBmonCRversion "! --"
 
 #define BIN_WIDTH_S ( 24*60*60 / DATA_SIZE ) // set to e.g. 60 for plot speedup in testing
@@ -70,13 +70,13 @@ bool addr_available[ N_ADDR_TO_CHECK ];
 int i_addr_to_check = 0;
 unsigned long last_addr_check_ms = 0;
 
-bool boiler_running = 0;
-bool rooms_heating = 0;
-bool water_heating = 0;
+bool boiler_running = false;
+bool rooms_heating = false;
+bool water_heating = false;
 double outsd_temp = -12.3;
 double rooms_temp = 45.6;
 double water_temp = 78.9;
-int buffr_temp = 0;
+double buffr_temp = 0;
 
 #define DATA_SIZE (24*3)  // 3 bins / h => bin width = 20 min
 typedef struct {
@@ -140,19 +140,32 @@ bool pv_update( unsigned long ms ) {
        && ms > last_pv_check_ms ) // no overflow?
     return false;
   last_pv_check_ms = ms;
-  if ( strcmp( time_now, sunrise ) < 0 || strcmp( time_now, sunset ) > 0 )
+  if ( strcmp( time_now, sunrise ) < 0 || strcmp( time_now, sunset ) > 0 ) {
+    if ( !strncmp( time_now, "01:0x", 4 ) )
+      pv_kwh = pv_watts = 0;
     return false;
+  }
   WiFiClient client;
   #define PV_SERVER "user.nepviewer.com"
   if ( !client.connect( PV_SERVER, 80 ) ) return false;
   client.println( String( "GET /pv_monitor/home/index/" ) + PV_IDENT + " HTTP/1.1" );
   client.println( String( "Host: " ) + PV_SERVER );
   client.println( );
-  // Serial.println( client.readStringUntil( '\n' ) );
   if ( !client.find( "round(" ) ) return false;  // e.g. "var now = Math.round(206);"
-  pv_watts = client.parseInt( );
-  if ( client.find( "Today:" ) ) pv_kwh = client.parseFloat( );
-  Serial.println( String( "PV = " ) + pv_watts + " W / " + pv_kwh + " kWh" );
+  int tmp_pv_watts = client.parseInt( );
+  if ( !client.find( "Today:" ) ) return false;
+  double tmp_pv_kwh = client.parseFloat( );
+  if ( !client.find( "Last update:" ) ) return false;
+  #define N 11
+  char when[N];
+  memset( when, 0, N );
+  client.read( (uint8_t*)when, N-1 );
+  #undef N
+  Serial.println( String( "PV (" ) + when + ") = " + pv_watts + " W / " + pv_kwh + " kWh" );
+  if ( strcmp( when, date_now ) ) return false;
+  if ( tmp_pv_watts == 0 && (int)tmp_pv_kwh == 0 ) return false;
+  pv_watts = tmp_pv_watts;
+  pv_kwh = tmp_pv_kwh;
   return true;
 #endif
 }
@@ -484,6 +497,42 @@ void update_time( ) {
   #endif
 }
 
+void send2bsblan( const char *path ) {
+  WiFiClient client;
+  if ( !client.connect( "bsb-lan", 80 ) ) return;
+  client.print( String( "GET " ) + path + " HTTP/1.1\r\n\r\n" );
+  while ( client.connected( ) )
+    if ( client.available( ) ) client.read( ); else delay( 1 );
+}
+
+void limit_boiler_runs_for_water( ) {
+  #ifdef LIMIT_BOILER_RUNS_FOR_WATER
+  static bool did_run = false;
+  static bool dhw_on = true;
+  bool new_day = !strcmp( time_now, "01:00" );
+  if ( new_day && !(boiler_running && water_heating) ) did_run = false;
+  if ( !dhw_on && (    new_day
+                    || boiler_running  // boiler already running, anyway (rooms, manual DHW)?
+                    || buffr_temp - water_temp >= RE_SWITCH_DIFFERENCE  // use buffer again!
+                  ) ) {
+    Serial.println( "DHW = on" );
+    dhw_on = true;
+    if ( !water_heating ) send2bsblan( "/S1600=1" );
+  }
+  if ( !water_heating ) return;
+  if ( boiler_running ) did_run = true;
+  else if ( dhw_on && did_run
+            // not in boiler overrun?:
+            && water_temp < TWW_Sollwert_1610
+            // buffer soon not sufficient?:
+            && buffr_temp - water_temp < TWW_Umladeueberhoehung_5021 + SWITCH_MARGIN ) {
+    Serial.println( "DHW = off" );
+    dhw_on = false;
+    send2bsblan( "/S1600=0" );
+  }
+  #endif
+}
+
 void setup( ) {
   setCpuFrequencyMhz( 80 );  // 240->80 MHz = approx. -20% power consumption
   Serial.begin( 115200 );
@@ -568,7 +617,7 @@ void loop( ) {
     convert_bsblan_udp( udp_buf );
     Serial.println( udp_buf );
     int param, value;
-    if ( 2 == sscanf( udp_buf, "%d:%d", &param, &value ) )
+    if ( 2 == sscanf( udp_buf, "%d:%d", &param, &value ) ) {
       switch ( param ) {
         #define ADD_TO_LOG(i) { recent[i] = value;  recent_set |= 1 << i; } while ( 0 )
         case HEATING_STATUS:
@@ -607,13 +656,15 @@ void loop( ) {
           break;
         #ifdef BUFFER_TEMPERATURE
         case BUFFER_TEMPERATURE:
-          buffr_temp = value;
+          buffr_temp = 0.1 * value;
           log_data( &buffr[pos], value );
           screen_update_reqd = true;
           ADD_TO_LOG( 6 );
           break;
         #endif
       }
+      limit_boiler_runs_for_water( );
+    }
     //- new data -> log!:
     #define FULL_SET ( ( 1 << N_RECENT ) - 1 )
     if ( recent_set == FULL_SET ) { // only when all params have been set
@@ -693,7 +744,7 @@ void loop( ) {
     #ifdef BUFFER_TEMPERATURE
       #ifdef BUFFER_TEMP_OFFSET // absolute scale
         int xb = 128 - DATA_SIZE;
-        int yb = buffr_temp/10.0 - BUFFER_TEMP_OFFSET - 0.5;
+        int yb = buffr_temp - BUFFER_TEMP_OFFSET - 0.5;
         for ( int i=0; i<=yb; ++i )
           if ( i%10!=9 || i==yb )
             oled.drawPixel( xb, 63-i );
@@ -703,7 +754,7 @@ void loop( ) {
         int ymax = find_max( buffr );
         if ( ymin != ymax ) { // otherwise we don't know how to scale
           int x = 128 - DATA_SIZE;
-          int y = (long)( buffr_temp - ymin ) * MAXY / ( ymax - ymin );
+          int y = (long)( 10 * buffr_temp - ymin ) * MAXY / ( ymax - ymin );
           oled.drawLine( x, MAXY, x, MAXY-y );
         }
       #endif

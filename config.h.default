@@ -58,3 +58,14 @@ TimeChangeRule STT = {"CET ", Last, Sun, Oct, 3,  60};     // Central European S
 // global position to determine sunrise/sunset (no need to ask for pv updates when there's no sun):
 #define LATITUDE  52.4
 #define LONGITUDE 13.3
+
+//- define the following, if desired (requires a buffer in your heating system!)
+//#define LIMIT_BOILER_RUNS_FOR_WATER
+// allow only one boiler run for DHW per day, then allow loading from the buffer only - as long as possible
+// do this via disabling (and re-enabling) DWH only, because that's easy to see (and "fix") on the boiler's room unit
+// (one could take this a bit further by tweaking the following heating parameters, but ... see above)
+#define TWW_Sollwert_1610           45  // must be as programmed for the heating system!
+#define TWW_Schaltdifferenz_5024    10  // "
+#define TWW_Umladeueberhoehung_5021  8  // "
+#define SWITCH_MARGIN        0.5
+#define RE_SWITCH_DIFFERENCE (TWW_Umladeueberhoehung_5021 + 5)
