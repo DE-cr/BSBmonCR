@@ -299,9 +299,8 @@ Wall mounted BSBmonCR system (I'm lacking the tools to fit the display *in* the 
 
 * [Presence indication](#presence-indicator) via ping is not always reliable
   (e.g. some cell phones' power saving functions may interfere).
-* The NTPClient library used is broken, but the workaround implemented
-  here seems to suffice.
-* Depending on your [solar power](#solar-power-display) system's connectivity, nepviewer.com may not always have recent values that can be displayed.
+* Depending on your [solar power](#solar-power-display) system's connectivity,
+  nepviewer.com may not always have recent values that can be displayed.
 * When the [buffer temperature](#buffer-temperature) drops really fast,
   [limiting boiler runs for DHW](#limiting-boiler-runs-for-dhw) may not
   react quickly enough to avoid boiler startup.

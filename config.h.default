@@ -27,10 +27,10 @@
 #define UDP_PORT 6502 // requires BSB_LAN source from 2022-08-20 or newer, with UPD logging configured
 //#define UDP_PORT 28000 // requires BSB_LAN customization (c.f. README.md)
 
-//- timezone info (keep the variable names used here!)
-// see https://github.com/JChristensen/Timezone for info on what values to provide within the {}:
-TimeChangeRule DST = {"CEST", Last, Sun, Mar, 2, 120};     // Central European Summer Time
-TimeChangeRule STT = {"CET ", Last, Sun, Oct, 3,  60};     // Central European Standard Time
+//- time info:
+// see https://github.com/nayarsystems/posix_tz_db/blob/master/zones.csv for full list of timezones
+#define NTP_SERVER "pool.ntp.org"
+#define LOCAL_TIMEZONE "CET-1CEST,M3.5.0,M10.5.0/3"
 
 //- names of computers to periodically check their network presence:
 #define ADDR_TO_CHECK // e.g.: "Smartphone1", "Smartphone2", "Notebook"

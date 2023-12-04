@@ -4,13 +4,11 @@
  * (file BSBmonCR.ino)
  */
 
-#include <Timezone.h>
-
 //-- config:
 
 #include "config.h"
 
-#define BSBmonCRversion "0.10.3"
+#define BSBmonCRversion "0.10.4"
 #define HELLO "-- Welcome to BSBmonCR v" BSBmonCRversion "! --"
 
 #define BIN_WIDTH_S ( 24*60*60 / DATA_SIZE ) // set to e.g. 60 for plot speedup in testing
@@ -27,9 +25,6 @@
 
 #define OTA_UPDATE_PORT 8080
 
-// library default of 60s violates pool.ntp.org terms of service!:
-#define NTP_UPDATE_INTERVAL ( 60L * 60 * 1000 ) // [ms]
-
 //-- libs:
 
 #include <U8g2lib.h>
@@ -37,7 +32,6 @@
 #include <WiFiUdp.h>
 #include <ESP32Ping.h>
 #include <WiFiClientSecure.h>
-#include "NTPClientFix.h"
 #include <WebServer.h>
 #include <Update.h>
 #include <sunset.h>
@@ -92,8 +86,7 @@ t_log_data buffr[ DATA_SIZE ];
 t_log_data ipadr[ N_ADDR_TO_CHECK ][ DATA_SIZE ];
 int prev_pos = -1;
 
-WiFiUDP ntpUDP;
-NTPClient timeClient( ntpUDP );  // offset to UTC handled with Timezone library functions, to include daylight savings time
+int time_now_seconds;
 char time_now[8], time_prev[8];
 char date_now[11], date_prev[11];
 #ifdef BUFFER_TEMPERATURE
@@ -126,7 +119,6 @@ const char* update_server_index =
 int pv_watts = 0;
 double pv_kwh = 0;
 
-Timezone tz(DST,STT);
 char sunrise[8], sunset[8];  // hh:mm
 
 //-- code:
@@ -256,28 +248,6 @@ unsigned char* compile_bitmap( ) {
       *pbuf++ = ~v;  // black on white looks better in BMP
     }
   return buf;
-}
-
-int leapyear( int year ) {
-  return !(year % 4) && (year % 100 || !(year % 400)) ? 1 : 0;
-}
-
-char* epoch2date( unsigned long epoch, char* date ) {
-  // date must be at least char[11]!
-  epoch /= 24 * 60 * 60;
-  int year = 1970;
-  while ( epoch >= 365 + leapyear( year ) )
-    epoch -= 365 + leapyear( year ++ );
-  int days_in_month[] =
-    //Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov
-    { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30 };
-  days_in_month[ 1 ] += leapyear( year ); // fix Feb?
-  int* m_days = days_in_month;
-  int month;
-  for ( month = 0; epoch >= *m_days; ++ month )
-    epoch -= *( m_days ++);
-  sprintf( date, "%04d-%02d-%02d", year, month+1, (int)epoch+1 );
-  return date;
 }
 
 bool updateDropboxToken( ) {
@@ -472,17 +442,16 @@ void convert_bsblan_udp( char* udp_buf ) {
 }
 
 void update_time( ) {
-  timeClient.update( );
-  NTPClientFix( timeClient );
-  time_t t_orig = timeClient.getEpochTime( );
-  time_t t = tz.toLocal( t_orig );
-  int hm = t % ( 24 * 60 * 60 );  // drop date -> h:m:s
-  hm /= 60;  // drop seconds
-  sprintf( time_now, "%02d:%02d", hm / 60, hm % 60 );
-  epoch2date( t, date_now );
+  time_t now;
+  if ( time( &now ) < 50 * 365ul * 24 * 60 * 60 ) return;  // before ca. 2020?
+  time_now_seconds = now % 60;
+  strftime( date_now, 11, "%F", localtime( &now ) );
+  strftime( time_now,  6, "%R", localtime( &now ) );
+  // Serial.println( String( date_now ) + '_' + time_now + '+' + time_now_seconds + 's' );
   #ifdef PV_IDENT
   if ( !strcmp( date_now, date_prev ) ) return;  // no need for expensive sunrise/sunset calculation
-  int hours_from_utc = ( t - t_orig ) / ( 60 * 60 );
+  int hours_from_utc = ( mktime(localtime(&now)) - mktime(gmtime(&now)) ) / ( 60 * 60 );
+  // Serial.println( String( "hours_from_utc = " ) + hours_from_utc );
   int y, m, d;
   sscanf( date_now, "%d-%d-%d", &y, &m, &d );
   SunSet location;
@@ -553,12 +522,13 @@ void setup( ) {
   WiFi.begin( MY_SSID, MY_PASSWORD );
   udp.begin( UDP_PORT );
   server.begin( );
-  timeClient.begin( );
   *date_prev = *time_prev = 0;
   *dropbox_access_token = 0;
   *sunset = *sunrise = 0;
   init_ota_update( );
-  timeClient.setUpdateInterval( NTP_UPDATE_INTERVAL );
+  configTime( 0, 0, NTP_SERVER );
+  setenv( "TZ", LOCAL_TIMEZONE, 1 );
+  tzset( );
   Serial.println( "setup() done." );
 }
 
@@ -611,6 +581,7 @@ void loop( ) {
     ++ i_addr_to_check;
   }
   //- UDP packet received?:
+  bool new_data = false;
   if ( udp.parsePacket( ) ) {
     memset( udp_buf, 0, UDP_BUF_SIZE );
     udp.read( udp_buf, UDP_BUF_SIZE-1 );
@@ -622,55 +593,58 @@ void loop( ) {
         #define ADD_TO_LOG(i) { recent[i] = value;  recent_set |= 1 << i; } while ( 0 )
         case HEATING_STATUS:
           rooms_heating = ROOMS_HEATING;
-          screen_update_reqd = true;
+          new_data = true;
           ADD_TO_LOG( 0 );
           break;
         case WATER_STATUS:
           water_heating = WATER_HEATING;
-          screen_update_reqd = true;
+          new_data = true;
           ADD_TO_LOG( 1 );
           break;
         case BOILER_STATUS:
           boiler_running = BOILER_RUNNING;
           log_data( &heatg[pos], boiler_running ? 1 : 0 );
-          screen_update_reqd = true;
+          new_data = true;
           ADD_TO_LOG( 2 );
           break;
         case OUTSIDE_TEMPERATURE:
           outsd_temp = 0.1 * value;
           log_data( &outsd[pos], value );
-          screen_update_reqd = true;
+          new_data = true;
           ADD_TO_LOG( 3 );
           break;
         case ROOMS_TEMPERATURE:
           rooms_temp = 0.1 * value;
           log_data( &rooms[pos], value );
-          screen_update_reqd = true;
+          new_data = true;
           ADD_TO_LOG( 4 );
           break;
         case WATER_TEMPERATURE:
           water_temp = 0.1 * value;
           log_data( &water[pos], value );
-          screen_update_reqd = true;
+          new_data = true;
           ADD_TO_LOG( 5 );
           break;
         #ifdef BUFFER_TEMPERATURE
         case BUFFER_TEMPERATURE:
           buffr_temp = 0.1 * value;
           log_data( &buffr[pos], value );
-          screen_update_reqd = true;
+          new_data = true;
           ADD_TO_LOG( 6 );
           break;
         #endif
       }
       limit_boiler_runs_for_water( );
     }
+    screen_update_reqd |= new_data;
+  }//udp
+  if ( screen_update_reqd ) update_time( );
+  if ( new_data ) {
     //- new data -> log!:
     #define FULL_SET ( ( 1 << N_RECENT ) - 1 )
     if ( recent_set == FULL_SET ) { // only when all params have been set
       recent_set = 0;
-      update_time( );
-      if ( strcmp( time_now, time_prev ) ) { // new hh:mm
+      if ( *time_now && strcmp( time_now, time_prev ) ) { // new hh:mm
         if ( !access_token_ok ||
              !strcmp( time_now + 5 - strlen( UPDATE_DROPBOX_TOKEN_AT ), UPDATE_DROPBOX_TOKEN_AT ) )
           // Dropbox access tokens usually expire after 4h, but this is easier for us to handle
@@ -712,7 +686,7 @@ void loop( ) {
         strcpy( time_prev, time_now );
       } // new hh:mm
     } // log
-  } // udp
+  } // new data
   //- redraw screen?:
   if ( screen_update_reqd ) {
     oled.clearBuffer( );
@@ -783,7 +757,7 @@ void loop( ) {
         oled.drawPixel( x, y );
     int h_;
     sscanf( time_now, "%d:%d", &h_, &m_ );
-    byte HH=h_, MM=m_, SS=timeClient.getSeconds();
+    byte HH=h_, MM=m_, SS=time_now_seconds;
     bits = HH<<16ul | MM<<8ul | SS;
     for ( int x=0;  x < 24;  ++x )
       if ( bits & 1ul << ( 23 - x ) )
