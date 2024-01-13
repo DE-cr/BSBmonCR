@@ -8,7 +8,7 @@
 
 #include "config.h"
 
-#define BSBmonCRversion "0.10.4"
+#define BSBmonCRversion "0.10.5"
 #define HELLO "-- Welcome to BSBmonCR v" BSBmonCRversion "! --"
 
 #define BIN_WIDTH_S ( 24*60*60 / DATA_SIZE ) // set to e.g. 60 for plot speedup in testing
@@ -486,7 +486,7 @@ void limit_boiler_runs_for_water( ) {
                   ) ) {
     Serial.println( "DHW = on" );
     dhw_on = true;
-    if ( !water_heating ) send2bsblan( "/S1600=1" );
+    send2bsblan( "/S1600=1" );
   }
   if ( !water_heating ) return;
   if ( boiler_running ) did_run = true;
