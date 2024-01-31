@@ -69,3 +69,5 @@
 #define TWW_Umladeueberhoehung_5021  8  // "
 #define SWITCH_MARGIN        0.5
 #define RE_SWITCH_DIFFERENCE (TWW_Umladeueberhoehung_5021 + 5)
+// if the following is defined: after first boiler run per day it won't be started for DHW
+#define NO_BOILER_STARTS_FOR_WATER_AFTER_INITIAL_RUN

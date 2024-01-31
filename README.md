@@ -210,7 +210,7 @@ instead to expand the `?` wildcards. Perl is [free](https://perl.org) software, 
 Introduced with v0.6.0
 
 By loading `http://<your-BSBmonCR-address>:8080/` in your web browser,
-you can update you BSBmonCR's software "over the air" (OTA).
+you can update your BSBmonCR's software "over the air" (OTA).
 There you can upload a file created via `Sketch -> Export compiled binary file...`
 in the Arduino IDE. (Of course this works only with an esp32 already
 running OTA enabled software, i.e. the first time you have to load the
@@ -232,6 +232,8 @@ heating water from the buffer would be feasible again).
 
 If required, a manual DHW push will always be possible, though.
 When the boiler is running to heat the house anyway, DHW heating will also be done.
+
+Introduced with v0.10.6: By defining `NO_BOILER_STARTS_FOR_WATER_AFTER_INITIAL_RUN` in `config.h`, the boiler will not start for DHW if it has already run that day.
 
 ## Example Images
 
