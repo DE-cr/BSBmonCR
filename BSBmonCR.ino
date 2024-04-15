@@ -8,7 +8,7 @@
 
 #include "config.h"
 
-#define BSBmonCRversion "0.10.6"
+#define BSBmonCRversion "0.10.7"
 #define HELLO "-- Welcome to BSBmonCR v" BSBmonCRversion "! --"
 
 #define BIN_WIDTH_S ( 24*60*60 / DATA_SIZE ) // set to e.g. 60 for plot speedup in testing
@@ -442,16 +442,25 @@ void convert_bsblan_udp( char* udp_buf ) {
 }
 
 void update_time( ) {
-  time_t now;
-  if ( time( &now ) < 50 * 365ul * 24 * 60 * 60 ) return;  // before ca. 2020?
-  time_now_seconds = now % 60;
-  strftime( date_now, 11, "%F", localtime( &now ) );
-  strftime( time_now,  6, "%R", localtime( &now ) );
-  // Serial.println( String( date_now ) + '_' + time_now + '+' + time_now_seconds + 's' );
-  #ifdef PV_IDENT
+  struct tm timeinfo;
+  if( !getLocalTime( &timeinfo ) ){
+    Serial.println( "Failed to obtain time!" );
+    return;
+  }
+  strftime( date_now, 11, "%F", &timeinfo );
+  strftime( time_now,  6, "%R", &timeinfo );
+  time_now_seconds = timeinfo.tm_sec;
   if ( !strcmp( date_now, date_prev ) ) return;  // no need for expensive sunrise/sunset calculation
-  int hours_from_utc = ( mktime(localtime(&now)) - mktime(gmtime(&now)) ) / ( 60 * 60 );
-  // Serial.println( String( "hours_from_utc = " ) + hours_from_utc );
+  //
+  Serial.println( String(date_now) + '_' + time_now + '+' + time_now_seconds + 's' );
+  #ifdef PV_IDENT
+  char utc_offset[6];
+  strftime(utc_offset, 6, "%z", &timeinfo );
+  int hh, mm;
+  sscanf( utc_offset+1, "%2d%2d", &hh, &mm );
+  double hours_from_utc = hh + mm/60.0;
+  if ( *utc_offset == '-' ) hours_from_utc *= -1;
+  Serial.println( String( "hours_from_utc = " ) + hours_from_utc );
   int y, m, d;
   sscanf( date_now, "%d-%d-%d", &y, &m, &d );
   SunSet location;
