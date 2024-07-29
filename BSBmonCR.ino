@@ -8,7 +8,7 @@
 
 #include "config.h"
 
-#define BSBmonCRversion "0.10.7"
+#define BSBmonCRversion "0.10.8"
 #define HELLO "-- Welcome to BSBmonCR v" BSBmonCRversion "! --"
 
 #define BIN_WIDTH_S ( 24*60*60 / DATA_SIZE ) // set to e.g. 60 for plot speedup in testing
@@ -55,6 +55,7 @@ WiFiServer server( 80 );
 #include "water_semi_on.xbm.h"
 #include "water_on.xbm.h"
 #include "bmp_header.h"
+#include "favicon.ico.h"
 
 const char* addr_to_check[] = { ADDR_TO_CHECK };
 #define N_ADDR_TO_CHECK ( sizeof( addr_to_check ) / sizeof( *addr_to_check ) )
@@ -802,6 +803,15 @@ void loop( ) {
           client.println( "Connection: close" );
           client.println( );
           client.write( compile_bitmap( ), BMP_SIZE );
+          break;
+        }
+        else if ( ! strcmp( (char*)buf, "GET /favicon.ico " ) ) {
+          // ready to go, forget about the rest
+          client.println( "HTTP/1.1 200 OK" );
+          client.println( "Content-Type: image/icon" );
+          client.println( "Connection: close" );
+          client.println( );
+          client.write( favicon, sizeof(favicon) );
           break;
         }
       }

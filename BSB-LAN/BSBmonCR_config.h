@@ -14,4 +14,4 @@
 #define HEATING_STATUS      8001
 #define WATER_STATUS        8003
 #define BOILER_STATUS       8005
-#define BUFFER_TEMPERATURE  8980 // optional, comment out if not available
+#define BUFFER_TEMPERATURE  7831 // optional, comment out if not available
