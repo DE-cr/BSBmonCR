@@ -12,17 +12,14 @@ open STDIN, "wget -qO- bsb-mon|" if -t and !@ARGV;
 while (<>) {
   ($_ = ~$_) =~  # bit flip bitmap
     /(                  # capture these bytes to $1
-       (                # epoch year can be 1970-2106:
-        \x07[\xb2-\xff] # 1970-2047
-        |               # or
-        \x08[\0-\x3a]   # 2048-2106
-       )
+       [\x14]           # year: 20..
+       [\x18-\x20]      # year: ..24-32 (epoch year could be 1970-2106)
        [\x01-\x0c]      # month: 1-12
        [\x01-\x1f]      # day: 1-31
        [\0-\x17]        # hour: 0-23
        [\0-\x3b]{2}     # minute,second: 0-59
      )/x;
-  printf "%04d-%02d-%02d %02d:%02d:%02d", unpack"nC*", $1;
+  printf "%d%02d-%02d-%02d %02d:%02d:%02d", unpack"C*", $1;
   s/.{130}//s;  # remove bmp header
   my @p = reverse map { unpack "B*" } /(.{16})/gs;  # -> lines array
   if (substr($p[0],0,56) !~ /^0.+1.+0$/) {          # pv values available?

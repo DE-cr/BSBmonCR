@@ -8,7 +8,7 @@
 
 #include "config.h"
 
-#define BSBmonCRversion "0.10.9"
+#define BSBmonCRversion "0.10.10"
 #define HELLO "-- Welcome to BSBmonCR v" BSBmonCRversion "! --"
 
 #define BIN_WIDTH_S ( 24*60*60 / DATA_SIZE ) // set to e.g. 60 for plot speedup in testing
@@ -763,9 +763,8 @@ void loop( ) {
     #ifdef WITH_NERDY_TIMESTAMP_DISPLAY
     int y_, m_, d_;
     sscanf( date_now, "%d-%d-%d", &y_, &m_, &d_ );
-    unsigned short yyyy = y_;
-    byte mm=m_, dd=d_;
-    unsigned long bits = yyyy<<16ul | mm<<8ul | dd;
+    byte yyh=y_/100, yyl=y_%100, mm=m_, dd=d_;
+    unsigned long bits = yyh<<24ul | yyl<<16ul | mm<<8ul | dd;
     int y = 63 - PLOT_REDUCTION * 3;
     for ( int x=0;  x < 32;  ++x )
       if ( bits & 1ul << ( 31 - x ) )
