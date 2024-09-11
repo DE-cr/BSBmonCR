@@ -275,7 +275,8 @@ and current day's energy total in green, 1 kWh to each full horizontal bar, 2.4 
 [^4]: `-----XXX XXX--XX-` = 2022, `----X-X-` = 10, `----XX-X` = 13,
 `--------` = 0, `--------` = 0, `----X--X` = 9 (with a line
 below to mark the LSB (least significant bit) of each byte
--> 2022-10-13T00:00:09 :)
+-> 2022-10-13T00:00:09 :) P.S. The coding has changed slightly with v0.10.10:
+now the century is encoded separately from the rest of the year, i.e. 2022 would be encoded as ---X-X-- ---X-XX-.
 
 Naked esp32 fitted with ssd1306 display:
 
