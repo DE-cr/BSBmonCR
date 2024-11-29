@@ -205,6 +205,17 @@ instead to expand the `?` wildcards. Perl is [free](https://perl.org) software, 
 
 [^2]: On Windows, use double quotes instead of single quotes.
 
+#### Checking Fuel Consumption
+
+You can calculate the hours your burner was active by using the following
+command on BSBmonCR's `*.csv` log files:
+
+`perl -ne '$n++if(split/,/)[3]<17;END{printf"%.0f h\n",$n/60}' *.csv`
+
+If you know how much fuel your burner uses per hour (its rated power [kW] combined
+with your fuel's fuel value [kW/kg] should give you a starting point), you
+can use that to transform hours of burner activity into fuel consumed.
+
 ### OTA Update
 
 Introduced with v0.6.0
