@@ -8,7 +8,7 @@
 
 #include "config.h"
 
-#define BSBmonCRversion "0.10.11"
+#define BSBmonCRversion "0.10.12"
 #define HELLO "-- Welcome to BSBmonCR v" BSBmonCRversion "! --"
 
 #define BIN_WIDTH_S ( 24*60*60 / DATA_SIZE ) // set to e.g. 60 for plot speedup in testing
@@ -139,7 +139,7 @@ bool pv_update( unsigned long ms ) {
     return false;
   }
   WiFiClient client;
-  #define PV_SERVER "user.nepviewer.com"
+  #define PV_SERVER "user2.nepviewer.com"
   if ( !client.connect( PV_SERVER, 80 ) ) return false;
   client.println( String( "GET /pv_monitor/home/index/" ) + PV_IDENT + " HTTP/1.1" );
   client.println( String( "Host: " ) + PV_SERVER );
