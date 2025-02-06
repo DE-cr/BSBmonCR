@@ -8,7 +8,7 @@
 
 #include "config.h"
 
-#define BSBmonCRversion "0.10.12"
+#define BSBmonCRversion "0.10.13"
 #define HELLO "-- Welcome to BSBmonCR v" BSBmonCRversion "! --"
 
 #define BIN_WIDTH_S ( 24*60*60 / DATA_SIZE ) // set to e.g. 60 for plot speedup in testing
@@ -20,8 +20,6 @@
 #define OLED_ROTATION U8G2_R0 // U8G2_R2 for 180°
 #define OLED_FONT u8g2_font_helvR12_te
 #define TEMP_FMT "%.1f"
-
-#define UPDATE_DROPBOX_TOKEN_AT ":42" // when hh:mm ends like this
 
 #define OTA_UPDATE_PORT 8080
 
@@ -108,7 +106,6 @@ unsigned long log_size = 0;
 #define TOKEN_INTRO "{\"access_token\": \""
 #define MAX_TOKEN_LENGTH 150 // the ones I've seen are 139 chars each
 char dropbox_access_token[ MAX_TOKEN_LENGTH + 1 ];
-bool access_token_ok = false;
 
 WebServer update_server( OTA_UPDATE_PORT );
 const char* update_server_index =
@@ -304,7 +301,6 @@ bool readFromDropbox( const char* path, const char* basename, const char* extens
   #ifndef USE_DROPBOX
   return false;
   #endif
-  if ( !access_token_ok ) return false;
   bool success = false;
   for (;;) {
     String fn = String( path ) + basename + extension;
@@ -343,7 +339,9 @@ bool readFromDropbox( const char* path, const char* basename, const char* extens
       Serial.println( data_size );
     } else Serial.println( "connectFailed" );
     if ( success || !(retries--) ) return success;
-    delay( 1000 );
+    delay( 100 );
+    updateDropboxToken();
+    delay( 100 );
   }
 }
                        
@@ -352,7 +350,6 @@ bool send2dropbox( const char* path, const char* basename, const char* extension
   #ifndef USE_DROPBOX
   return false;
   #endif
-  if ( !access_token_ok ) return false;
   bool success = false;
   for (;;) {
     String fn = String( path ) + basename + extension;
@@ -386,7 +383,9 @@ bool send2dropbox( const char* path, const char* basename, const char* extension
       client.stop( );
     } else Serial.println( "connectFailed" );
     if ( success || !(retries--) ) return success;
-    delay( 1000 );
+    delay( 100 );
+    updateDropboxToken();
+    delay( 100 );
   }
 }
 
@@ -660,26 +659,22 @@ void loop( ) {
     if ( recent_set == FULL_SET ) { // only when all params have been set
       recent_set = 0;
       if ( *time_now && strcmp( time_now, time_prev ) ) { // new hh:mm
-        if ( !access_token_ok ||
-             !strcmp( time_now + 5 - strlen( UPDATE_DROPBOX_TOKEN_AT ), UPDATE_DROPBOX_TOKEN_AT ) )
-          // Dropbox access tokens usually expire after 4h, but this is easier for us to handle
-          access_token_ok = updateDropboxToken( );
         bool new_day = strcmp( date_now, date_prev );
         if ( log_size ) {
           if ( ! strcmp( time_now + 5 - strlen( DROPBOX_BMP_WRITE_TIME_PATTERN ),
                          DROPBOX_BMP_WRITE_TIME_PATTERN ) )
-            send2dropbox( DROPBOX_PATH, date_prev, ".bmp", compile_bitmap( ), BMP_SIZE, 0 );
+            send2dropbox( DROPBOX_PATH, date_prev, ".bmp", compile_bitmap( ), BMP_SIZE, 1 );
           if ( log_size && ( new_day ||
                ! strcmp( time_now + 5 - strlen( DROPBOX_CSV_WRITE_TIME_PATTERN ),
                          DROPBOX_CSV_WRITE_TIME_PATTERN ) ) )
-            send2dropbox( DROPBOX_PATH, date_prev, ".csv", (byte*)complete_log, log_size, new_day ? 2 : 0 );
+            send2dropbox( DROPBOX_PATH, date_prev, ".csv", (byte*)complete_log, log_size, new_day ? 2 : 1 );
         } // log_size
         if ( new_day ) {
           Serial.println( String( date_now ) + " (" + sunrise + '-' + sunset + ')' );
           log_size = *complete_log = 0; // clear log for new day (even if the last send2dropbox failed!)
           strcpy( date_prev, date_now );
           // any data to restore from dropbox?:
-          readFromDropbox( DROPBOX_PATH, date_now, ".csv", (byte*)complete_log, log_size, MAX_LOG_SIZE, 0 );
+          readFromDropbox( DROPBOX_PATH, date_now, ".csv", (byte*)complete_log, log_size, MAX_LOG_SIZE, 1 );
         }
         strcpy( recent_line, time_now );
         for ( int i = 0;  i < N_RECENT;  ++i ) {
