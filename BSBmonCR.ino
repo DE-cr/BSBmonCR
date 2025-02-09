@@ -8,7 +8,7 @@
 
 #include "config.h"
 
-#define BSBmonCRversion "0.10.13"
+#define BSBmonCRversion "0.10.14"
 #define HELLO "-- Welcome to BSBmonCR v" BSBmonCRversion "! --"
 
 #define BIN_WIDTH_S ( 24*60*60 / DATA_SIZE ) // set to e.g. 60 for plot speedup in testing
@@ -104,7 +104,7 @@ unsigned long log_size = 0;
 #define DROPBOX_CONTENT_SERVER "content.dropboxapi.com"
 #define CHUNK_SIZE (8*1024)
 #define TOKEN_INTRO "{\"access_token\": \""
-#define MAX_TOKEN_LENGTH 150 // the ones I've seen are 139 chars each
+#define MAX_TOKEN_LENGTH 2048
 char dropbox_access_token[ MAX_TOKEN_LENGTH + 1 ];
 
 WebServer update_server( OTA_UPDATE_PORT );
@@ -285,6 +285,8 @@ bool updateDropboxToken( ) {
       for ( int n = 0;  *p_line && *p_line != '"' && n < MAX_TOKEN_LENGTH;  ++n )
         *p_token++ = *p_line++;
       *p_token = 0;
+      Serial.print( "token:" );
+      Serial.println( dropbox_access_token );
     } else {
       Serial.print( ':' );
       Serial.println( line );
@@ -379,7 +381,11 @@ bool send2dropbox( const char* path, const char* basename, const char* extension
       String response = client.connected() ? client.readStringUntil('\n') : "diconnected";
       Serial.println( response );
       success = response == "HTTP/1.1 200 OK\r";
-      while ( client.available() ) client.read();
+      while ( client.available() ) {
+        char c = client.read();
+        if ( !success ) Serial.print( c );
+      }
+      if ( !success ) Serial.println( );
       client.stop( );
     } else Serial.println( "connectFailed" );
     if ( success || !(retries--) ) return success;
