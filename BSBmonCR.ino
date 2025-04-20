@@ -8,7 +8,7 @@
 
 #include "config.h"
 
-#define BSBmonCRversion "0.10.14"
+#define BSBmonCRversion "0.10.15"
 #define HELLO "-- Welcome to BSBmonCR v" BSBmonCRversion "! --"
 
 #define BIN_WIDTH_S ( 24*60*60 / DATA_SIZE ) // set to e.g. 60 for plot speedup in testing
@@ -141,7 +141,7 @@ bool pv_update( unsigned long ms ) {
   client.println( String( "GET /pv_monitor/home/index/" ) + PV_IDENT + " HTTP/1.1" );
   client.println( String( "Host: " ) + PV_SERVER );
   client.println( );
-  for (int i=0; i<20 && !client.available(); ++i)  // server is constantly getting slower :(
+  for (int i=0; i<30 && !client.available(); ++i)  // server is constantly getting slower :(
     delay(100);
   if ( !client.find( "round(" ) ) return false;  // e.g. "var now = Math.round(206);"
   int tmp_pv_watts = client.parseInt( );
