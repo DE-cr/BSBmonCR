@@ -123,6 +123,8 @@ scale can also be selected for the buffer temperature in `config.h`.
 
 #### Solar Power Display
 
+_Note 2025-04-21: As of today, the nepviewer.com access used has been blocked (403 Forbidden)!_
+
 Introduced with v0.9.0
 
 If you have a small solar energy system registered with nepviewer.com
