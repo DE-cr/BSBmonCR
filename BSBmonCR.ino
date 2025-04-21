@@ -8,7 +8,7 @@
 
 #include "config.h"
 
-#define BSBmonCRversion "0.10.15"
+#define BSBmonCRversion "0.10.16"
 #define HELLO "-- Welcome to BSBmonCR v" BSBmonCRversion "! --"
 
 #define BIN_WIDTH_S ( 24*60*60 / DATA_SIZE ) // set to e.g. 60 for plot speedup in testing
@@ -115,14 +115,14 @@ const char* update_server_index =
   "</form>";
 
 int pv_watts = 0;
-double pv_kwh = 0;
+int pv_wh = 0;
 
 char sunrise[8], sunset[8];  // hh:mm
 
 //-- code:
 
 bool pv_update( unsigned long ms ) {
-#ifndef PV_IDENT
+#ifndef PV_SN
   return false;
 #else
   static unsigned long last_pv_check_ms = 0;
@@ -132,32 +132,32 @@ bool pv_update( unsigned long ms ) {
   last_pv_check_ms = ms;
   if ( strcmp( time_now, sunrise ) < 0 || strcmp( time_now, sunset ) > 0 ) {
     if ( !strncmp( time_now, "01:0x", 4 ) )
-      pv_kwh = pv_watts = 0;
+      pv_wh = pv_watts = 0;
     return false;
   }
   WiFiClient client;
   #define PV_SERVER "user2.nepviewer.com"
   if ( !client.connect( PV_SERVER, 80 ) ) return false;
-  client.println( String( "GET /pv_monitor/home/index/" ) + PV_IDENT + " HTTP/1.1" );
+  client.println( String( "GET /pv_monitor/proxy/status/" ) + PV_SN + "/0/2/ HTTP/1.1" );
   client.println( String( "Host: " ) + PV_SERVER );
   client.println( );
   for (int i=0; i<30 && !client.available(); ++i)  // server is constantly getting slower :(
     delay(100);
-  if ( !client.find( "round(" ) ) return false;  // e.g. "var now = Math.round(206);"
-  int tmp_pv_watts = client.parseInt( );
-  if ( !client.find( "Today:" ) ) return false;
-  double tmp_pv_kwh = client.parseFloat( );
-  if ( !client.find( "Last update:" ) ) return false;
+  if ( !client.find( "\"LastUpDate\":\"" ) ) return false;
   #define N 11
   char when[N];
   memset( when, 0, N );
   client.read( (uint8_t*)when, N-1 );
   #undef N
-  Serial.println( String( "PV (" ) + when + ") = " + pv_watts + " W / " + pv_kwh + " kWh" );
+  if ( !client.find( "\"now\":" ) ) return false;
+  int tmp_pv_watts = client.parseInt( );
+  if ( !client.find( "\"today\\\":" ) ) return false;
+  int tmp_pv_wh = client.parseInt( );
+  Serial.println( String( "PV (" ) + when + ") = " + tmp_pv_watts + " W / " + tmp_pv_wh + " Wh" );
   if ( strcmp( when, date_now ) ) return false;
-  if ( tmp_pv_watts == 0 && (int)tmp_pv_kwh == 0 ) return false;
+  if ( tmp_pv_watts == 0 && tmp_pv_wh == 0 ) return false;
   pv_watts = tmp_pv_watts;
-  pv_kwh = tmp_pv_kwh;
+  pv_wh = tmp_pv_wh;
   return true;
 #endif
 }
@@ -199,7 +199,7 @@ void draw_temp( double val, int y_pos, unsigned char* xbm_bits ) {
   sprintf( str, TEMP_FMT, val );
   if ( strlen( str ) > 4 ) str[3] = '\0';  // -10.0 (too wide) => -10
   static int y_shift = 0;
-  #ifdef PV_IDENT
+  #ifdef PV_SN
     if ( --y_shift < 0 ) y_shift = 2;
     #define X_SHIFT 3
   #else
@@ -461,7 +461,7 @@ void update_time( ) {
   if ( !strcmp( date_now, date_prev ) ) return;  // no need for expensive sunrise/sunset calculation
   //
   Serial.println( String(date_now) + '_' + time_now + '+' + time_now_seconds + 's' );
-  #ifdef PV_IDENT
+  #ifdef PV_SN
   char utc_offset[6];
   strftime(utc_offset, 6, "%z", &timeinfo );
   int hh, mm;
@@ -749,14 +749,14 @@ void loop( ) {
         }
       #endif
     #endif
-    #ifdef PV_IDENT
+    #ifdef PV_SN
     // current power, vertical from top left, 10 Watts per pixel:
     int yp = (pv_watts+5)/10 - 1;
     for ( int i=0; i<=yp; ++i )
       if ( i%10!=9 || i==yp )
         oled.drawPixel( 0, i );
     // current day's energy generation, top line horizontal, 10 pixels per kWh:
-    int xp = (int)(pv_kwh*10+0.5) - 1;
+    int xp = (pv_wh+50)/100 - 1;
     for ( int i=0; i<=xp; ++i )
       if ( i%10!=9 || i==xp )
         oled.drawPixel( 128-DATA_SIZE-1-i, 0 );

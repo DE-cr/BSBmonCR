@@ -127,7 +127,7 @@ Introduced with v0.9.0
 
 If you have a small solar energy system registered with nepviewer.com
 you can also have its most[^0] recent power report displayed by setting
-`PV_IDENT` in `config.h`.
+`PV_SN` in `config.h`.
 
 [^0]: It's actually _fairly_ recent, depending on `PV_UPDATE_INTERVAL`
 in `BSBmonCR.ino`.
