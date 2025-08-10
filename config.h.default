@@ -53,8 +53,9 @@
 #define LSB_MARKERS_FOR_NERDY_TIMESTAMP // to improve readability for humans
 
 //- define the following if you have a small solar system registered with nepviewer.com:
-// (use your micro inverter's serial number here)
-//#define PV_SN "efcdab78"
+//#define PV_SN "efcdab78"  // your micro inverter's serial number
+#define NEP_ACCOUNT "me@home.de"
+#define NEP_PASSWORD "secret"
 // global position to determine sunrise/sunset (no need to ask for pv updates when there's no sun):
 #define LATITUDE  52.4
 #define LONGITUDE 13.3

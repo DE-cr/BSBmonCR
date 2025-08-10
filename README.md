@@ -123,13 +123,11 @@ scale can also be selected for the buffer temperature in `config.h`.
 
 #### Solar Power Display
 
-_Note 2025-04-21: As of today, the nepviewer.com access used has been blocked (403 Forbidden)!_
-
 Introduced with v0.9.0
 
 If you have a small solar energy system registered with nepviewer.com
 you can also have its most[^0] recent power report displayed by setting
-`PV_SN` in `config.h`.
+`PV_SN` and the following lines in `config.h`.
 
 [^0]: It's actually _fairly_ recent, depending on `PV_UPDATE_INTERVAL`
 in `BSBmonCR.ino`.

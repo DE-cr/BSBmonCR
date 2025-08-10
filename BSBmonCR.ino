@@ -8,7 +8,7 @@
 
 #include "config.h"
 
-#define BSBmonCRversion "0.10.16"
+#define BSBmonCRversion "0.10.18"
 #define HELLO "-- Welcome to BSBmonCR v" BSBmonCRversion "! --"
 
 #define BIN_WIDTH_S ( 24*60*60 / DATA_SIZE ) // set to e.g. 60 for plot speedup in testing
@@ -135,30 +135,70 @@ bool pv_update( unsigned long ms ) {
       pv_wh = pv_watts = 0;
     return false;
   }
-  WiFiClient client;
-  #define PV_SERVER "user2.nepviewer.com"
-  if ( !client.connect( PV_SERVER, 80 ) ) return false;
-  client.println( String( "GET /pv_monitor/proxy/status/" ) + PV_SN + "/0/2/ HTTP/1.1" );
-  client.println( String( "Host: " ) + PV_SERVER );
-  client.println( );
-  for (int i=0; i<30 && !client.available(); ++i)  // server is constantly getting slower :(
-    delay(100);
-  if ( !client.find( "\"LastUpDate\":\"" ) ) return false;
-  #define N 11
-  char when[N];
-  memset( when, 0, N );
-  client.read( (uint8_t*)when, N-1 );
-  #undef N
-  if ( !client.find( "\"now\":" ) ) return false;
-  int tmp_pv_watts = client.parseInt( );
-  if ( !client.find( "\"today\\\":" ) ) return false;
-  int tmp_pv_wh = client.parseInt( );
-  Serial.println( String( "PV (" ) + when + ") = " + tmp_pv_watts + " W / " + tmp_pv_wh + " Wh" );
-  if ( strcmp( when, date_now ) ) return false;
-  if ( tmp_pv_watts == 0 && tmp_pv_wh == 0 ) return false;
-  pv_watts = tmp_pv_watts;
-  pv_wh = tmp_pv_wh;
-  return true;
+  // let's ask the NEP server for current data:
+  #define PV_SERVER "api.nepviewer.net"
+  static String token;
+  WiFiClientSecure client;
+  client.setInsecure();
+  if ( ! client.connect( PV_SERVER, 443 ) ) {
+    Serial.println( "connect failed" );
+    return false;
+  }
+  char date[11];
+  sprintf( date, "%s/%.2s/%.4s", date_now+8, date_now+5, date_now );
+  for (int tries=2; tries; --tries) {
+    Serial.print( String( "Looking for pv data on " ) + date + " => " );
+    const char* sn = "{\"sn\":\"" PV_SN "\"}";
+    client.print( "POST /v2/device/statistics/overview HTTP/1.1\r\n"
+                  "Host: " PV_SERVER "\r\n"
+                  "oem: NEP\r\n"
+                  "Authorization: " );
+    client.print( token + "\r\n"
+                  "Content-Length: " );
+    client.print( strlen( sn ) );
+    client.print( "\r\n"
+                  "\r\n" );
+    client.print( sn );
+    for (int i=0; i<50 && client.connected() && !client.available(); ++i) delay(10);
+    if ( client.find( "\"totalNow\":" ) ) {
+      // example data to look for: "totalNow":259 - "today":"3.086" - "lastUpdate":"19/08/2025 16:54"
+      int tmp_pv_watts = client.parseInt( );
+      if ( !client.find( "\"today\":\"" ) ) {
+        Serial.println( "no kWh value" );
+        return false;
+      }
+      int tmp_pv_wh = client.parseFloat( ) * 1000;
+      if ( !client.find( date ) ) {
+        Serial.println( "date not found" );
+        return false;
+      }
+      if ( tmp_pv_watts == 0 && tmp_pv_wh == 0 ) {
+        Serial.println( "W and Wh are zero" );
+        return false;
+      }
+      pv_watts = tmp_pv_watts;
+      pv_wh = tmp_pv_wh;
+      Serial.println( String( "W=") + pv_watts + ", Wh=" + pv_wh );
+      return true;
+    }
+    Serial.print( "trying to sign in => " );
+    const char* login = "{\"account\":\"" NEP_ACCOUNT "\",\"password\":\"" NEP_PASSWORD "\"}";
+    client.print( "POST /v2/sign-in HTTP/1.1\r\n"
+                  "Host: " PV_SERVER "\r\n"
+                  "oem: NEP\r\n"
+                  "Content-Length: " );
+    client.print( strlen(login) );
+    client.print( "\r\n"
+                  "\r\n" );
+    client.print( login );
+    for (int i=0; i<50 && client.connected() && !client.available(); ++i) delay(10);
+    if ( !client.find( "\"token\":\"" ) ) {
+      Serial.println( "no token" );
+      return false;
+    }
+    token = client.readStringUntil( '"' );
+    Serial.println( String("token=") + token );
+  }
 #endif
 }
 
