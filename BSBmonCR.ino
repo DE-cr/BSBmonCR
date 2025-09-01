@@ -8,8 +8,10 @@
 
 #include "config.h"
 
-#define BSBmonCRversion "0.10.18"
+#define BSBmonCRversion "0.10.19"
 #define HELLO "-- Welcome to BSBmonCR v" BSBmonCRversion "! --"
+
+#define WDT_TIMEOUT 27 // watchdog timeout in seconds
 
 #define BIN_WIDTH_S ( 24*60*60 / DATA_SIZE ) // set to e.g. 60 for plot speedup in testing
 #define WIFI_CHECK_INTERVAL  7000L // [ms]
@@ -33,6 +35,7 @@
 #include <WebServer.h>
 #include <Update.h>
 #include <sunset.h>
+#include <esp_task_wdt.h>
 
 //-- vars:
 
@@ -589,10 +592,22 @@ void setup( ) {
   configTime( 0, 0, NTP_SERVER );
   setenv( "TZ", LOCAL_TIMEZONE, 1 );
   tzset( );
+  Serial.println( String("Setting watchdog to ") + WDT_TIMEOUT + " seconds..." );
+  esp_task_wdt_deinit();
+  esp_task_wdt_config_t wdt_config = {
+    .timeout_ms = WDT_TIMEOUT * 1000,
+    .idle_core_mask = (1 << portNUM_PROCESSORS) - 1,  // all processors
+    .trigger_panic = true
+  };
+  esp_err_t err = esp_task_wdt_init( &wdt_config );
+  Serial.println( String("Last reset: ") + esp_err_to_name(err) );
+  esp_task_wdt_add( NULL );  // add current thread
   Serial.println( "setup() done." );
 }
 
 void loop( ) {
+  esp_task_wdt_reset( );
+  delay( 1 );  // for wdt reset
   unsigned long ms = millis( );
   //- wifi check?:
   if ( ms - last_wifi_check_ms > WIFI_CHECK_INTERVAL
